@@ -16,9 +16,11 @@ jobs:
     name: Provisioning
   steps:
     - checkout: self
-      path: automation
+      path: s/automation
     - checkout: provisioning
-      path: provisioning
+      path: s/provisioning
     - pwsh: | 
+        Write-Host "Import provisioning modules"
+        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1 | % { Import-Module $_.FullName -Force }
         ls $(Build.SourcesDirectory)
         
