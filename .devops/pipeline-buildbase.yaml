@@ -10,13 +10,13 @@ trigger: none
 pr: none
 
 jobs:
-- checkout: self
-- checkout: provisioning
 - job: Test
   displayName: Test
   pool:
     name: Provisioning
   steps:
+    - checkout: self
+    - checkout: provisioning
     - pwsh: | 
         ls $(Build.SourcesDirectory)
         
