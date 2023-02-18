@@ -1,0 +1,22 @@
+resources:
+  repositories:
+    - repository: provisioning
+      type: github
+      endpoint: "Github"
+      name: spyder007/provisioning-projects
+
+
+trigger: none
+pr: none
+
+jobs:
+- checkout: self
+- checkout: provisioning
+- job: Test
+  displayName: Test
+  pool:
+    name: Provisioning
+  steps:
+    - pwsh: | 
+        ls $(Build.SourcesDirectory)
+        
