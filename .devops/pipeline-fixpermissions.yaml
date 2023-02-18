@@ -4,7 +4,7 @@ jobs:
   pool:
     name: Provisioning
   steps:
-    - pwsh:
+    - pwsh: | 
         $NewAcl = Get-Acl -Path "C:\"
         $identity = "BUILTIN\Administrators"
         $fileSystemRights = "FullControl"
