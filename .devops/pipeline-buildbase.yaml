@@ -16,7 +16,9 @@ jobs:
     name: Provisioning
   steps:
     - checkout: self
+      path: automation
     - checkout: provisioning
+      path: provisioning
     - pwsh: | 
         ls $(Build.SourcesDirectory)
         
