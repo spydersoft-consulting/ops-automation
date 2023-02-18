@@ -5,6 +5,7 @@ jobs:
     name: Provisioning
   steps:
     - pwsh: | 
+        (get-acl "C:\").Access | Format-Table
         $NewAcl = Get-Acl -Path "C:\"
         $identity = "BUILTIN\Administrators"
         $fileSystemRights = "FullControl"
@@ -14,11 +15,11 @@ jobs:
         $NewAcl.SetAccessRule($fileSystemAccessRule)
         Set-Acl -Path . -AclObject $NewAcl
 
-        $NewAcl = Get-Acl -Path "C:\"
-        $identity = "NT AUTHORITY\SYSTEM"
-        $fileSystemRights = "FullControl"
-        $type = "Allow"
-        $fileSystemAccessRuleArgumentList = $identity, $fileSystemRights, $type
-        $fileSystemAccessRule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule -ArgumentList $fileSystemAccessRuleArgumentList
-        $NewAcl.SetAccessRule($fileSystemAccessRule)
-        Set-Acl -Path . -AclObject $NewAcl
+        # $NewAcl = Get-Acl -Path "C:\"
+        # $identity = "NT AUTHORITY\SYSTEM"
+        # $fileSystemRights = "FullControl"
+        # $type = "Allow"
+        # $fileSystemAccessRuleArgumentList = $identity, $fileSystemRights, $type
+        # $fileSystemAccessRule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule -ArgumentList $fileSystemAccessRuleArgumentList
+        # $NewAcl.SetAccessRule($fileSystemAccessRule)
+        # Set-Acl -Path . -AclObject $NewAcl
