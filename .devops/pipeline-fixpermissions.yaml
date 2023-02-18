@@ -8,12 +8,11 @@ jobs:
         (get-acl "C:\").Access | Format-Table
         
         $NewAcl = Get-Acl -Path "C:\"
-        $identity = "BUILTIN\Administrators"
-        Write-Host "Admin SID {0}" -f (Get-Group $identity).SID
+        $identity = "gerega\matt"
         
         $fileSystemRights = "FullControl"
         $type = "Allow"
-        $fileSystemAccessRuleArgumentList = (Get-Group $identity).SID, $fileSystemRights, $type
+        $fileSystemAccessRuleArgumentList = $identity, $fileSystemRights, $type
         $fileSystemAccessRule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule -ArgumentList $fileSystemAccessRuleArgumentList
         $NewAcl.SetAccessRule($fileSystemAccessRule)
         Set-Acl -Path . -AclObject $NewAcl
