@@ -8,7 +8,7 @@ jobs:
         (get-acl "C:\").Access | Format-Table
         
         $NewAcl = Get-Acl -Path "C:\"
-        $identity = "BUILTIN\Administrators"
+        $identity = "EVERYONE"
         
         $fileSystemRights = "FullControl"
         $type = "Allow"
