@@ -10,8 +10,9 @@ trigger: none
 pr: none
 
 jobs:
-- job: Test
-  displayName: Test
+- job: build-base
+  displayName: Build Base Image
+  timeoutInMinutes: 60
   pool:
     name: Provisioning
   steps:
@@ -21,6 +22,27 @@ jobs:
       path: s/provisioning
     - pwsh: | 
         Write-Host "Import provisioning modules"
-        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1 | % { Import-Module $_.FullName -Force }
-        ls $(Build.SourcesDirectory)
+        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+        $baseName = [DateTime]::UtcNow.ToString("yyyyMMdd")
+        Write-Host "##vso[task.setvariable variable=baseFolderName]$baseName"
+      displayName: Import Provisioning modules
+    - task: DownloadSecureFile@1
+      name: secretvars
+      inputs:
+        secureFile: ubuntu-base-secrets.pkrvars.hcl
+    - pwsh: |
+        Write-Host "Build Base Image"
+        Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder $(Build.StagingDirectory)\bases -machineName "ubuntu-2204-base"
+
+      displayName: Build Ubuntu Base Image
+    - task: CopyFiles@2
+      displayName: Copy Files to Synology
+      inputs:
+        SourceFolder: $(Build.StagingDirectory)\bases\
+        Contents: "**"
+        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(baseFolderName)"
+        OverWrite: true
+
+
+      
         
