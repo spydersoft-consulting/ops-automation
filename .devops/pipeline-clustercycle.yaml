@@ -41,7 +41,11 @@ jobs:
         Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
         Write-Host "Copy authorized keys to files"
-        Copy-Item "$(secretvars.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
+        if (-not (Test-Path "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/")) {
+          New-Item -ItemType Directory "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/"
+        }
+
+        Copy-Item "$(authkeys.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
 
         Write-Host "Finding latest base image"
         $baseImage = Get-ChildItem \\cloud.gerega.net\Images\bases\ubuntu-* | Sort-Object -Property Name -Descending | Select-Object -first 1
