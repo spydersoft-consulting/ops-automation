@@ -44,9 +44,5 @@ jobs:
       inputs:
         SourceFolder: $(Build.StagingDirectory)\bases\
         Contents: "**"
-        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)
+        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)"
         OverWrite: true
-
-
-      
-        
