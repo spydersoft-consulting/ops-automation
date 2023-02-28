@@ -27,7 +27,10 @@ jobs:
     - pwsh: |     
         $baseName = [DateTime]::UtcNow.ToString("yyyyMMdd")
         Write-Host "##vso[task.setvariable variable=baseFolderName]$baseName"
-
+        $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+        $regexAddPath = [regex]::Escape($addPath)
+        $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+        $env:Path = ($arrPath + $addPath) -join ';'
         Write-Host "Import provisioning modules"
         Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
