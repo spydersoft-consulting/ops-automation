@@ -35,7 +35,7 @@ jobs:
         Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
         Write-Host "Build Base Image"
-        Push-Location "s/provisioning"
+        Push-Location "$(Build.SourcesDirectory)\provisioning"
         Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder $(Build.StagingDirectory)\bases -machineName "ubuntu-2204-base"
 
       displayName: Build Ubuntu Base Image
