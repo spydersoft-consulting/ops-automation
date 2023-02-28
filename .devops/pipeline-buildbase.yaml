@@ -36,7 +36,7 @@ jobs:
 
         Write-Host "Build Base Image"
         Push-Location "$(Build.SourcesDirectory)\provisioning"
-        Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder $(Build.StagingDirectory)\bases -machineName "ubuntu-2204-base"
+        Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
 
       displayName: Build Ubuntu Base Image
     - task: CopyFiles@2
