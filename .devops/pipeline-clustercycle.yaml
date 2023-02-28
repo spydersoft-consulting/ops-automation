@@ -33,6 +33,8 @@ jobs:
       inputs:
         secureFile: authorized_keys
     - pwsh: |     
+        Install-Module powershell-yaml -Force
+
         $addPath = "C:\Program Files\OpenSSL-Win64\bin"
         $regexAddPath = [regex]::Escape($addPath)
         $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
