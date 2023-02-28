@@ -10,7 +10,7 @@ trigger: none
 pr: none
 
 jobs:
-- job: build-base
+- job: build_base
   displayName: Build Base Image
   timeoutInMinutes: 60
   pool:
