@@ -38,7 +38,7 @@ jobs:
         Push-Location "$(Build.SourcesDirectory)\provisioning"
         Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
 
-        New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(baseFolderName)"
+        New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$baseName"
 
       displayName: Build Ubuntu Base Image
     - task: CopyFiles@2
