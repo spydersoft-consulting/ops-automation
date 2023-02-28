@@ -52,7 +52,7 @@ jobs:
         $imageFolder = Get-ChildItem $baseImage.FullName | Select-Object -first 1
 
         Write-Host "Using $($imageFolder.FullName) for Base Image"
-        Set-Rke2Settings -nodePrefix "gk" -clusterStorage = "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
+        Set-Rke2Settings -nodePrefix "gk" -clusterStorage "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
 
         Write-Host "Configure Unifi Client Settings"
         Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
