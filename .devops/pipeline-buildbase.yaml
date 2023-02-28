@@ -20,17 +20,17 @@ jobs:
       path: s/automation
     - checkout: provisioning
       path: s/provisioning
-    - pwsh: | 
-        Write-Host "Import provisioning modules"
-        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
-        $baseName = [DateTime]::UtcNow.ToString("yyyyMMdd")
-        Write-Host "##vso[task.setvariable variable=baseFolderName]$baseName"
-      displayName: Import Provisioning modules
     - task: DownloadSecureFile@1
       name: secretvars
       inputs:
         secureFile: ubuntu-base-secrets.pkrvars.hcl
-    - pwsh: |
+    - pwsh: |     
+        $baseName = [DateTime]::UtcNow.ToString("yyyyMMdd")
+        Write-Host "##vso[task.setvariable variable=baseFolderName]$baseName"
+
+        Write-Host "Import provisioning modules"
+        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
         Write-Host "Build Base Image"
         Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder $(Build.StagingDirectory)\bases -machineName "ubuntu-2204-base"
 
