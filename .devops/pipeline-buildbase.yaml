@@ -25,8 +25,6 @@ jobs:
       inputs:
         secureFile: ubuntu-base-secrets.pkrvars.hcl
     - pwsh: |     
-        $baseName = [DateTime]::UtcNow.ToString("yyyyMMdd")
-        Write-Host "##vso[task.setvariable variable=baseFolderName]$baseName"
         $addPath = "C:\Program Files\OpenSSL-Win64\bin"
         $regexAddPath = [regex]::Escape($addPath)
         $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
@@ -38,7 +36,7 @@ jobs:
         Push-Location "$(Build.SourcesDirectory)\provisioning"
         Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
 
-        New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$baseName"
+        New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(Build.BuildNumber)"
 
       displayName: Build Ubuntu Base Image
     - task: CopyFiles@2
@@ -46,7 +44,7 @@ jobs:
       inputs:
         SourceFolder: $(Build.StagingDirectory)\bases\
         Contents: "**"
-        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(baseFolderName)"
+        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)
         OverWrite: true
 
 
