@@ -1,0 +1,7 @@
+trigger: none
+pr: none
+
+extends:
+  template: template-clustercycle.yaml
+  parameters:
+    clusterName: nonprod

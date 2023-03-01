@@ -1,3 +1,10 @@
+parameters:
+  - name: clusterName
+    type: string
+  - name: dnsDomain
+    type: string
+    default: "gerega.net"
+
 resources:
   repositories:
     - repository: provisioning
@@ -5,13 +12,9 @@ resources:
       endpoint: "Github"
       name: spyder007/provisioning-projects
 
-
 variables:
   - group: unifi-api
   - group: auth-api-credentials
-
-trigger: none
-pr: none
 
 jobs:
 - job: cluste_cycle
@@ -62,6 +65,6 @@ jobs:
 
         Write-Host "Cycle RKE Cluster"
         Push-Location "$(Build.SourcesDirectory)\provisioning"
-        Cycle-Rke2ClusterNodes -clusterName "quicktest" -dnsDomain "gerega.net" -OutputFolder "D:\Hyper-V\"
+        Cycle-Rke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\"
 
       displayName: Cycle Cluster Nodes
