@@ -4,5 +4,4 @@ pr: none
 extends:
   template: template-clustercycle.yaml
   parameters:
-    clusterName: nonprod
-    maxAgeDays: 0
+    clusterName: production

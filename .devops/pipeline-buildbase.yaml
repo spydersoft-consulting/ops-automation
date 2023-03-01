@@ -5,9 +5,13 @@ resources:
       endpoint: "Github"
       name: spyder007/provisioning-projects
 
-
 trigger: none
 pr: none
+schedules:
+- cron: "0 0 * * 6"
+  displayName: "Weekly Base Build"
+  branches:
+    include: main
 
 jobs:
 - job: build_base
@@ -46,3 +50,10 @@ jobs:
         Contents: "**"
         TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)"
         OverWrite: true
+    - pwsh: |
+        $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
+        if ($currentBaseCount -gt 3) {
+          $deleteCount = $currentBaseCount - 3
+          get-childitem "\\cloud.gerega.net\Images\bases" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
+        }
+      displayName: Cleanup Old Images
