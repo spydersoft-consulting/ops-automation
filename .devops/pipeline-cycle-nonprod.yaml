@@ -1,8 +1,12 @@
 trigger: none
 pr: none
+schedules:
+- cron: "0 3 * * 0,3"
+  displayName: "Nonprod Cluster Agent Cycling"
+  branches:
+    include: main
 
 extends:
   template: template-clustercycle.yaml
   parameters:
     clusterName: nonprod
-    maxAgeDays: 0

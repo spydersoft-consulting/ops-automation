@@ -1,5 +1,10 @@
 trigger: none
 pr: none
+schedules:
+- cron: "0 3 * * 2,5"
+  displayName: "Production Cluster Agent Cycling"
+  branches:
+    include: main
 
 extends:
   template: template-clustercycle.yaml
