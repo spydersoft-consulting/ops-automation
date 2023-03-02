@@ -4,7 +4,8 @@ schedules:
 - cron: "0 3 * * 0,3"
   displayName: "Nonprod Cluster Agent Cycling"
   branches:
-    include: main
+    include: 
+      - main
 
 extends:
   template: template-clustercycle.yaml

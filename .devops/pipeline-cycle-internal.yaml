@@ -4,7 +4,8 @@ schedules:
 - cron: "0 3 * * 1,4"
   displayName: "Internal Cluster Agent Cycling"
   branches:
-    include: main
+    include: 
+      - main
 
 extends:
   template: template-clustercycle.yaml
