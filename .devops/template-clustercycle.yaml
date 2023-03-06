@@ -20,9 +20,9 @@ variables:
   - group: auth-api-credentials
 
 jobs:
-- job: cluste_cycle
+- job: cluster_cycle
   displayName: Cycle Cluster
-  timeoutInMinutes: 90
+  timeoutInMinutes: 180
   pool:
     name: Provisioning
   steps:

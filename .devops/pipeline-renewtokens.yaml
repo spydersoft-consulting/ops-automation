@@ -1,0 +1,21 @@
+trigger: none
+pr: none
+schedules:
+- cron: "0 0 * * 0"
+  displayName: "Renew Tokens"
+  branches:
+    include: 
+      - main
+
+variables:
+  - group: token-renewal-creds
+
+jobs:
+- job: renew_tokens
+  displayName: Renew Tokens
+  pool:
+    name: Default
+  steps:
+    - pwsh: |     
+        Push-Location "$(Build.SourcesDirectory)/scripts"
+        ./Renew-VaultToken.ps1 -appRole "$(vault-write-enabled-app-role-id)" -appRoleSecretId "$(vault-write-enabled-app-role-secret)" -tokenAppRole "$(vault-metrics-app-role-id)" -tokenAppRoleSecretId "$(vault-metrics-app-role-secret)" -vaultUrl "$(vault-url)" -kvName "$(vault-key-vault-name)" -secretPath "$(vault-metrics-secret-path)" -tokenKeyName "$(vault-metrics-secret-key-name)"
