@@ -3,6 +3,7 @@ pr: none
 schedules:
 - cron: "0 0 * * 0"
   displayName: "Renew Tokens"
+  always: true
   branches:
     include: 
       - main
