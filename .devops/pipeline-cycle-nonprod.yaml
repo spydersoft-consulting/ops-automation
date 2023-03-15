@@ -3,6 +3,7 @@ pr: none
 schedules:
 - cron: "0 3 * * 0,3"
   displayName: "Nonprod Cluster Agent Cycling"
+  always: true
   branches:
     include: 
       - main
