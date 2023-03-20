@@ -70,6 +70,29 @@ jobs:
 
         Write-Host "Cycle RKE Cluster"
         Push-Location "$(Build.SourcesDirectory)\provisioning"
-        Cycle-Rke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
+        $nodes = Cycle-Rke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
+
+        if ($nodes.Count -gt 0) {
+          echo "##vso[task.setvariable variable=restartNginx;isOutput=true]true"
+        }
+        else {
+          echo "##vso[task.setvariable variable=restartNginx;isOutput=true]false"
+        }
+
 
       displayName: Cycle Cluster Nodes
+      name: perform_cycle
+- job: restart_nginx
+  pool:
+    name: Default
+  dependsOn: cluster_cycle
+  condition: eq(dependencies.cluster_cycle.outputs['perform_cycle.restartNginx'], 'true')
+  steps:
+  - task: SSH@0
+    displayName: Restart Nginx Proxy
+    inputs:
+      sshEndpoint: m5proxy 
+      runOptions: 'inline' 
+      inline: sudo systemctl restart nginx.service
+      interpreterCommand: '/bin/bash' 
+      readyTimeout: '20000' 
