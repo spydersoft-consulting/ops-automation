@@ -20,10 +20,10 @@ resources:
 
 variables:
   - group: unifi-api
-${{ if eq(parameters.useStageUnifi, true) }}:
-  - group: auth-stage-api-credentials
-${{ else }}:
-  - group: auth-api-credentials
+  - ${{ if eq(parameters.useStageUnifi, true) }}:
+    - group: auth-stage-api-credentials
+  - ${{ else }}:
+    - group: auth-api-credentials
 
 jobs:
 - job: cluster_cycle
