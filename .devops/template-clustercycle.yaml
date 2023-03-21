@@ -7,6 +7,9 @@ parameters:
   - name: maxAgeDays
     type: number
     default: 14
+  - name: useStageUnifi
+    type: boolean
+    default: false
 
 resources:
   repositories:
@@ -17,6 +20,9 @@ resources:
 
 variables:
   - group: unifi-api
+${{ if eq(parameters.useStageUnifi, true) }}:
+  - group: auth-stage-api-credentials
+${{ else }}:
   - group: auth-api-credentials
 
 jobs:
