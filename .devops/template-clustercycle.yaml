@@ -19,11 +19,12 @@ resources:
       name: spyder007/provisioning-projects
 
 variables:
-  - group: unifi-api
   - ${{ if eq(parameters.useStageUnifi, true) }}:
     - group: auth-stage-api-credentials
+    - group: unifi-stage-api
   - ${{ else }}:
     - group: auth-api-credentials
+    - group: unifi-api
 
 jobs:
 - job: cluster_cycle
