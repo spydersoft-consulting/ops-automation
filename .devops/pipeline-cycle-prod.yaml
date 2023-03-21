@@ -12,3 +12,4 @@ extends:
   template: template-clustercycle.yaml
   parameters:
     clusterName: production
+    useStageUnifi: true
