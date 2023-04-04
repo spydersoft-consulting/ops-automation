@@ -22,7 +22,7 @@ variables:
   - ${{ if eq(parameters.useStageUnifi, true) }}:
     - group: auth-stage-api-credentials
     - group: unifi-stage-api
-  - ${{ else }}:
+  - ${{ if eq(parameters.useStageUnifi, false) }}:
     - group: auth-api-credentials
     - group: unifi-api
 

@@ -1,7 +1,7 @@
 trigger: none
 pr: none
 schedules:
-- cron: "0 3 * * 1,4"
+- cron: "0 3 * * 1"
   displayName: "Internal Cluster Agent Cycling"
   always: true
   branches:
