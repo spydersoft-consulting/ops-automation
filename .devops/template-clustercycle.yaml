@@ -45,7 +45,7 @@ jobs:
       name: authkeys
       inputs:
         secureFile: authorized_keys
-    - pwsh: |     
+    - powershell: |     
         Install-Module powershell-yaml -Force
 
         $addPath = "C:\Program Files\OpenSSL-Win64\bin"
