@@ -80,7 +80,7 @@ jobs:
 
         Write-Host "Cycle RKE Cluster"
         Push-Location "$(Build.SourcesDirectory)\provisioning"
-        $nodes = Cycle-Rke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
+        $nodes = Deploy-UpdatedRke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
 
         if ($nodes.Count -gt 0) {
           echo "##vso[task.setvariable variable=restartNginx;isOutput=true]true"
