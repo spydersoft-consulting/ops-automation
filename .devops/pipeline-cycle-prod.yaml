@@ -1,12 +1,12 @@
 trigger: none
 pr: none
-schedules:
-- cron: "0 3 * * 2"
-  displayName: "Production Cluster Agent Cycling"
-  always: true
-  branches:
-    include: 
-      - main
+schedules: none
+# - cron: "0 3 * * 2"
+#   displayName: "Production Cluster Agent Cycling"
+#   always: true
+#   branches:
+#     include: 
+#       - main
 
 extends:
   template: template-clustercycle.yaml
