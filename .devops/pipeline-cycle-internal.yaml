@@ -1,6 +1,6 @@
 trigger: none
 pr: none
-schedules: none
+#schedules: none
 # - cron: "0 3 * * 1"
 #   displayName: "Internal Cluster Agent Cycling"
 #   always: true
