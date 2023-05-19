@@ -1,6 +1,6 @@
 trigger: none
 pr: none
-schedules: none
+#schedules: none
 # - cron: "0 3 * * 0"
 #   displayName: "Nonprod Cluster Agent Cycling"
 #   always: true
