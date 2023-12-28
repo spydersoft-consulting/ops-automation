@@ -7,7 +7,6 @@ pr: none
 #   branches:
 #     include: 
 #       - main
-
 extends:
   template: template-clustercycle.yaml
   parameters:
