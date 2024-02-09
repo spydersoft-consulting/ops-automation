@@ -40,7 +40,7 @@ jobs:
         AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
     - pwsh: |
         terraform plan -var-file config/gerega.tfvars -out tf.plan
-        terraform show tf.plan > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
+        terraform show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
       displayName: 'Plan'
       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
       env:
@@ -53,6 +53,7 @@ jobs:
 
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: terraform-plan
+      displayName: 'Publish Terraform Plan'
 
     - ${{ if and(eq(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
       - pwsh: |
