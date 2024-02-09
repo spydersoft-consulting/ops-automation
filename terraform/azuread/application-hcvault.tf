@@ -1,7 +1,6 @@
 resource "azuread_application" "hcvault" {
   display_name            = "Hashicorp Vault"
   group_membership_claims = ["All"]
-  identifier_uris         = ["https://hcvault.mattgerega.net"]
 
   optional_claims {
     access_token {
