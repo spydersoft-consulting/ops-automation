@@ -1,0 +1,69 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - terraform/azuread/*
+      - .devops/pipeline-tf-azuread.yaml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - terraform/azuread/*
+      - .devops/pipeline-tf-azuread.yaml
+
+variables:
+  - group: 'terraform-azuread'
+  - group: 'terraform-s3-backend'
+
+jobs:
+- job: renew_tokens
+  displayName: Terraform
+  pool:
+    name: Default
+  steps:
+    - pwsh: |
+        terraform init
+      displayName: 'Initialize'
+      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+    - pwsh: |
+        terraform plan -var-file config/gerega.tfvars -out tf.plan
+        terraform show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
+      displayName: 'Plan'
+      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: terraform-plan
+      displayName: 'Publish Terraform Plan'
+
+    - ${{ if and(eq(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+      - pwsh: |
+          terraform apply -auto-approve tf.plan
+        displayName: 'Apply'
+        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
+        env:
+          ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+          ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+          ARM_TENANT_ID: $(ARM_TENANT_ID)
+          AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+          AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+          AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
