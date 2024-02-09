@@ -13,3 +13,11 @@ resource "azuread_group" "argo-admins" {
   owners           = [data.azuread_user.owner.object_id]
   members          = [data.azuread_user.owner.object_id]
 }
+
+resource "azuread_group" "vault-admins" {
+  display_name     = "vault-admins"
+  description      = "Administrators for HC Vault"
+  security_enabled = true
+  owners           = [data.azuread_user.owner.object_id]
+  members          = [data.azuread_user.owner.object_id]
+}
