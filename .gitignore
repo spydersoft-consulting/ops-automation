@@ -52,3 +52,4 @@ Thumbs.db
 **/.terraform/*
 terraform/**/tf.plan
 **/.vscode/*
+**/plan.json
