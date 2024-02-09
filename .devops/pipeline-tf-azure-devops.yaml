@@ -21,46 +21,7 @@ variables:
   - group: 'terraform-azure-devops'
   - group: 'terraform-s3-backend'
 
-jobs:
-- job: renew_tokens
-  displayName: Terraform
-  pool:
-    name: Default
-  steps:
-    - pwsh: |
-        terraform init
-      displayName: 'Initialize'
-      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/devops
-      env:
-        AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-        AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-    - pwsh: |
-        terraform plan -out tf.plan
-        terraform show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
-      displayName: 'Plan'
-      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/devops
-      env:
-        AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-        AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-
-    - publish: $(Build.ArtifactStagingDirectory)
-      artifact: terraform-plan
-      displayName: 'Publish Terraform Plan'
-
-    - ${{ if and(eq(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-      - pwsh: |
-          terraform apply -auto-approve tf.plan
-        displayName: 'Apply'
-        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/devops
-        env:
-          AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-          AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-          AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-          AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-          AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+extends:
+  template: template-terraform.yaml
+  parameters:
+    terraformDirectory: 'terraform/devops'
