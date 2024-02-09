@@ -26,3 +26,10 @@ jobs:
         terraform plan -out tf.plan
       displayName: 'Plan'
       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
