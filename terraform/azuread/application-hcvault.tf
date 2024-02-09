@@ -29,7 +29,10 @@ resource "azuread_application" "hcvault" {
   }
 
   web {
-    redirect_uris = ["https://hcvault.mattgerega.net/ui/vault/auth/oidc/oidc/callback"]
+    redirect_uris = [
+      "https://hcvault.mattgerega.net/ui/vault/auth/oidc/oidc/callback",
+      "https://hcvault.mattgerega.net/oidc/callback"
+    ]
     implicit_grant {
       access_token_issuance_enabled = false
       id_token_issuance_enabled     = true
