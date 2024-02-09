@@ -1,5 +1,21 @@
-trigger: none
-pr: none
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - terraform/azuread/*
+      - .devops/pipeline-azuread.yaml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - terraform/azuread/*
+      - .devops/pipeline-azuread.yaml
 
 variables:
   - group: 'terraform-azuread'
@@ -38,7 +54,7 @@ jobs:
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: terraform-plan
 
-    - ${{ if and(eq(variables['BranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if and(eq(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
       - pwsh: |
           terraform apply -auto-approve tf.plan
         displayName: 'Apply'
