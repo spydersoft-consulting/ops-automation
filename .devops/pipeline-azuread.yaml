@@ -37,8 +37,8 @@ jobs:
 
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: terraform-plan
-      
-    - ${{ if and(eq(variables['BranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest') }}:
+
+    - ${{ if and(eq(variables['BranchName'], 'main'), ne(variables['Build.Reason'], 'PullRequest')) }}:
       - pwsh: |
           terraform apply -auto-approve tf.plan
         displayName: 'Apply'
