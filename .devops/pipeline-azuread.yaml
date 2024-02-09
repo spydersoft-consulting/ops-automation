@@ -7,13 +7,13 @@ variables:
 
 jobs:
 - job: renew_tokens
-  displayName: Renew Tokens
+  displayName: Terraform
   pool:
     name: Default
   steps:
     - pwsh: |
         terraform init
-      displayName: 'Initialize Terraform'
+      displayName: 'Initialize'
       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
       env:
         ARM_CLIENT_ID: $(ARM_CLIENT_ID)
@@ -22,3 +22,7 @@ jobs:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+    - pwsh: |
+        terraform plan -out tf.plan
+      displayName: 'Plan'
+      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
