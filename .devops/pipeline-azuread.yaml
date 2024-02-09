@@ -23,7 +23,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
     - pwsh: |
-        terraform plan -out tf.plan
+        terraform plan -var-file=config/gerega.tfvars -out tf.plan
       displayName: 'Plan'
       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/azuread
       env:
