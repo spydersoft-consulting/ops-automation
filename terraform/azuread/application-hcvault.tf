@@ -31,7 +31,8 @@ resource "azuread_application" "hcvault" {
   web {
     redirect_uris = [
       "https://hcvault.mattgerega.net/ui/vault/auth/oidc/oidc/callback",
-      "https://hcvault.mattgerega.net/oidc/callback"
+      "https://hcvault.mattgerega.net/oidc/callback",
+      "http://localhost:8250/oidc/callback"
     ]
     implicit_grant {
       access_token_issuance_enabled = false
