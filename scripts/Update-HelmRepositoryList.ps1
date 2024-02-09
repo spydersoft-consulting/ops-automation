@@ -7,6 +7,8 @@
         The script will iterate over the source repositories and recursively search for chart.yaml files.  Any dependencies in the chart.yaml 
         file will be added to the local helm repository list using helm repo add.
 
+        This script assumes that the `helm` command is available on your local machine.
+
     .EXAMPLE
         Update-HelmRepositoryList -basePath c:\ops -sourceRepos @("repository1", "repository2")
 
