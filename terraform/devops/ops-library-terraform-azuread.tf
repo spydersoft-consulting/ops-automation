@@ -2,7 +2,7 @@ resource "azuredevops_variable_group" "terraform-azuread" {
   project_id = azuredevops_project.ops.id
   name = "terraform-azuread"
   description  = "Azure AD Service Principal"
-  allow_access = true
+  allow_access = false
 
   variable {
     name = "ARM_CLIENT_ID"

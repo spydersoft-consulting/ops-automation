@@ -28,7 +28,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
     - pwsh: |
-        if (${{ parameters.addVaultAuthentication }}) {
+        $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
+        if ($addVaultAuthentication) {
           terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) terraform plan ${{ parameters.planArguments }} -out tf.plan
         }
         else {
