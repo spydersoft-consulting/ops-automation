@@ -17,6 +17,18 @@ pr:
       - terraform/devops/*
       - .devops/pipeline-tf-azure-devops.yaml
 
+# Secrets may change when terraform-azuread runs.  When the 
+#  terraform-azuread pipeline runs from main, kick off this build
+resources:
+  pipelines:
+  - pipeline: terraform-azuread
+    source: terraform-azuread
+    project: Ops 
+    trigger:
+      branches:
+        include:
+          - main 
+
 variables:
   - group: 'terraform-azure-devops'
   - group: 'terraform-s3-backend'

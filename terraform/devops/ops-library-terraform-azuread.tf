@@ -1,7 +1,7 @@
 resource "azuredevops_variable_group" "terraform-azuread" {
   project_id = azuredevops_project.ops.id
   name = "terraform-azuread"
-  description  = "Azure AD Service Principal"
+  description  = "[terraform-managed] gerega-lab Service Principal for Terraform"
   allow_access = false
 
   variable {

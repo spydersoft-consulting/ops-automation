@@ -19,7 +19,7 @@ pr:
       
 
 variables:
-  - group: 'terraform-azure-geregalab'
+  - group: 'terraform-gerega-lab'
   - group: 'terraform-s3-backend'
   - group: 'terraform-hcvault'
 
