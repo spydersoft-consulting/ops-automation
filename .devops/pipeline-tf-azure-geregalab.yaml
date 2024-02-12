@@ -6,7 +6,7 @@ trigger:
   paths:
     include:
       - terraform/devops/*
-      - .devops/pipeline-tf-azure-devops.yaml
+      - .devops/pipeline-tf-azure-geregalab.yaml
 
 pr:
   branches:
@@ -15,15 +15,17 @@ pr:
   paths:
     include:
       - terraform/devops/*
-      - .devops/pipeline-tf-azure-devops.yaml
+      - .devops/pipeline-tf-azure-geregalab.yaml
+      
 
 variables:
-  - group: 'terraform-azure-devops'
+  - group: 'terraform-azure-geregalab'
   - group: 'terraform-s3-backend'
   - group: 'terraform-hcvault'
 
 extends:
   template: template-terraform.yaml
   parameters:
-    terraformDirectory: 'terraform/devops'
+    terraformDirectory: 'terraform/geregalab'
     addVaultAuthentication: true
+    planArguments: '-var-file config/gerega.tfvars'

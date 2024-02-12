@@ -20,9 +20,11 @@ pr:
 variables:
   - group: 'terraform-azuread'
   - group: 'terraform-s3-backend'
+  - group: 'terraform-hcvault'
 
 extends:
   template: template-terraform.yaml
   parameters:
     terraformDirectory: 'terraform/azuread'
+    addVaultAuthentication: true
     planArguments: '-var-file config/gerega.tfvars'
