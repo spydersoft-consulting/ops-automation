@@ -25,3 +25,17 @@ resource "vault_kv_secret_v2" "azuread-tf-sp" {
     }
   )
 }
+
+resource "vault_kv_secret_v2" "grafana-app" {
+  mount               = "secrets-infra"
+  name                = "azure/applications"
+  cas                 = 1
+  delete_all_versions = true
+  data_json = jsonencode(
+    {
+      appId     = azuread_service_principal.grafana.client_id
+      tenant_id = var.azure_directory_id
+      password  = azuread_service_principal_password.grafana.value
+    }
+  )
+}

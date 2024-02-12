@@ -42,3 +42,21 @@ resource "azuread_application" "grafana" {
     }
   }
 }
+
+resource "azuread_service_principal" "grafana" {
+  client_id                    = azuread_application.grafana.client_id
+  app_role_assignment_required = false
+  owners                       = [data.azuread_user.owner.object_id]
+  tags                         = ["HideApp", "WindowsAzureActiveDirectoryIntegratedApp"]
+}
+
+resource "time_rotating" "grafana" {
+  rotation_days = 7
+}
+
+resource "azuread_service_principal_password" "grafana" {
+  service_principal_id = azuread_service_principal.grafana.object_id
+  rotate_when_changed = {
+    rotation = time_rotating.grafana.id
+  }
+}
