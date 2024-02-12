@@ -30,7 +30,7 @@ jobs:
     - pwsh: |
         $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
         if ($addVaultAuthentication) {
-          terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) terraform plan ${{ parameters.planArguments }} -out tf.plan
+          terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan
         }
         else {
           terraform plan ${{ parameters.planArguments }} -out tf.plan
