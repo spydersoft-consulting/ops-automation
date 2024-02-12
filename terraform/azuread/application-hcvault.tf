@@ -40,3 +40,21 @@ resource "azuread_application" "hcvault" {
     }
   }
 }
+
+resource "azuread_service_principal" "hcvault" {
+  client_id                    = azuread_application.hcvault.client_id
+  app_role_assignment_required = false
+  owners                       = [data.azuread_user.owner.object_id]
+  tags                         = ["WindowsAzureActiveDirectoryIntegratedApp"]
+}
+
+resource "time_rotating" "hcvault" {
+  rotation_days = 7
+}
+
+resource "azuread_service_principal_password" "hcvault" {
+  service_principal_id = azuread_service_principal.hcvault.object_id
+  rotate_when_changed = {
+    rotation = time_rotating.hcvault.id
+  }
+}
