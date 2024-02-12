@@ -1,7 +1,7 @@
 resource "azuredevops_variable_group" "terraform-gerega-lab" {
   project_id = azuredevops_project.ops.id
   name = "terraform-gerega-lab"
-  description  = "Example Variable Group Description"
+  description  = "[terraform-managed] azuread Service Principal for Terraform"
   allow_access = true
 
   variable {
