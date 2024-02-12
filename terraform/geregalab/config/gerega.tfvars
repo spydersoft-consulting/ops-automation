@@ -1,0 +1,1 @@
+azure_directory_id = "70965cdd-c60c-4109-9fcf-709b2f23bd0c"
