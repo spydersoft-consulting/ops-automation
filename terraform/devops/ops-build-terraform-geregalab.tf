@@ -21,6 +21,6 @@ resource "azuredevops_build_definition" "tf-geregalab" {
     service_connection_id = azuredevops_serviceendpoint_github.spydersoft-consulting.id
     repo_type = "GitHub"
     repo_id = "spydersoft-consulting/ops-automation"
-    yml_path = ".devops/pipeline-tf-geregalab.yaml"
+    yml_path = ".devops/pipeline-tf-azure-geregalab.yaml"
   }
 }
