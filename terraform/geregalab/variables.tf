@@ -3,6 +3,11 @@ variable "azure_directory_id" {
   type        = string
 }
 
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
+}
+
 variable "vault_approle_role_id" {
   description = "Vault AppRole Role ID"
   type        = string
