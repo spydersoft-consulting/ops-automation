@@ -5,7 +5,7 @@ trigger:
       - feature/*
   paths:
     include:
-      - terraform/devops/*
+      - terraform/geregalab/*
       - .devops/pipeline-tf-azure-geregalab.yaml
 
 pr:
@@ -14,7 +14,7 @@ pr:
       - main
   paths:
     include:
-      - terraform/devops/*
+      - terraform/geregalab/*
       - .devops/pipeline-tf-azure-geregalab.yaml
       
 
