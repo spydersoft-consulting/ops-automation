@@ -49,3 +49,24 @@ resource "azuread_application" "argocd" {
     }
   }
 }
+
+resource "azuread_service_principal" "argocd" {
+  client_id                     = azuread_application.argocd.client_id
+  app_role_assignment_required  = true
+  login_url                     = "https://argo.mattgerega.net/auth/login"
+  owners                        = [data.azuread_user.owner.object_id]
+  preferred_single_sign_on_mode = "saml"
+  notification_email_addresses  = ["geregam@outlook.com"]
+  tags                          = ["WindowsAzureActiveDirectoryCustomSingleSignOnApplication", "WindowsAzureActiveDirectoryIntegratedApp"]
+}
+
+resource "time_rotating" "argocd" {
+  rotation_days = 7
+}
+
+resource "azuread_service_principal_password" "argocd" {
+  service_principal_id = azuread_service_principal.argocd.object_id
+  rotate_when_changed = {
+    rotation = time_rotating.argocd.id
+  }
+}

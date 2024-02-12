@@ -33,3 +33,21 @@ resource "azuread_application" "minio" {
     }
   }
 }
+
+resource "azuread_service_principal" "minio" {
+  client_id                    = azuread_application.minio.client_id
+  app_role_assignment_required = false
+  owners                       = [data.azuread_user.owner.object_id]
+  tags                         = ["HideApp", "WindowsAzureActiveDirectoryIntegratedApp"]
+}
+
+resource "time_rotating" "minio" {
+  rotation_days = 7
+}
+
+resource "azuread_service_principal_password" "minio" {
+  service_principal_id = azuread_service_principal.minio.object_id
+  rotate_when_changed = {
+    rotation = time_rotating.minio.id
+  }
+}
