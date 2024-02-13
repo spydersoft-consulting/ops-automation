@@ -53,7 +53,7 @@ jobs:
       - pwsh: |
           Install-Module powershell-yaml -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser
           Import-Module powershell-yaml
-          Add-Type -AssemblyName System.Management.Automation
+          
         displayName: 'Install YAML Module'
       # - pwsh: |
       #     $chart = Get-ChildItem -Path $(Build.SourcesDirectory)/ops-internal-cluster/external/monitor/grafana/Chart.yaml
