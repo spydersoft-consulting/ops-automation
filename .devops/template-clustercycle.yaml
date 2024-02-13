@@ -20,89 +20,88 @@ resources:
 
 variables:
   - ${{ if eq(parameters.useStageUnifi, true) }}:
-    - group: auth-stage-api-credentials
-    - group: unifi-stage-api
+      - group: auth-stage-api-credentials
+      - group: unifi-stage-api
   - ${{ if eq(parameters.useStageUnifi, false) }}:
-    - group: auth-api-credentials
-    - group: unifi-api
+      - group: auth-api-credentials
+      - group: unifi-api
 
 jobs:
-- job: cluster_cycle
-  displayName: Cycle Cluster
-  timeoutInMinutes: 180
-  pool:
-    name: Provisioning
-  steps:
-    - checkout: self
-      path: s/automation
-    - checkout: provisioning
-      path: s/provisioning
-    - task: DownloadSecureFile@1
-      name: secretvars
-      inputs:
-        secureFile: ubuntu-base-secrets.pkrvars.hcl
-    - task: DownloadSecureFile@1
-      name: authkeys
-      inputs:
-        secureFile: authorized_keys
-    - powershell: |     
-        Install-Module powershell-yaml -Force
+  - job: cluster_cycle
+    displayName: Cycle Cluster
+    timeoutInMinutes: 180
+    pool:
+      name: Provisioning
+    steps:
+      - checkout: self
+        path: s/automation
+      - checkout: provisioning
+        path: s/provisioning
+      - task: DownloadSecureFile@1
+        name: secretvars
+        inputs:
+          secureFile: ubuntu-base-secrets.pkrvars.hcl
+      - task: DownloadSecureFile@1
+        name: authkeys
+        inputs:
+          secureFile: authorized_keys
+      - powershell: |
+          Install-Module powershell-yaml -Force
 
-        $addPath = "C:\Program Files\OpenSSL-Win64\bin"
-        $regexAddPath = [regex]::Escape($addPath)
-        $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
-        $env:Path = ($arrPath + $addPath) -join ';'
-        Write-Host "Import provisioning modules"
-        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+          $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+          $regexAddPath = [regex]::Escape($addPath)
+          $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+          $env:Path = ($arrPath + $addPath) -join ';'
+          Write-Host "Import provisioning modules"
+          Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
-        Write-Host "Copy authorized keys to files"
-        if (-not (Test-Path "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/")) {
-          New-Item -ItemType Directory "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/"
-        }
+          Write-Host "Copy authorized keys to files"
+          if (-not (Test-Path "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/")) {
+            New-Item -ItemType Directory "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/"
+          }
 
-        Copy-Item "$(authkeys.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
+          Copy-Item "$(authkeys.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
 
-        Write-Host "Finding latest base image"
-        $baseImage = Get-ChildItem \\cloud.gerega.net\Images\bases\ubuntu-* | Sort-Object -Property Name -Descending | Select-Object -first 1
-        $imageFolder = Get-ChildItem $baseImage.FullName | Select-Object -first 1
+          Write-Host "Finding latest base image"
+          $baseImage = Get-ChildItem \\cloud.gerega.net\Images\bases\ubuntu-* | Sort-Object -Property Name -Descending | Select-Object -first 1
+          $imageFolder = Get-ChildItem $baseImage.FullName | Select-Object -first 1
 
-        Write-Host "Using $($imageFolder.FullName) for Base Image"
-        Set-Rke2Settings -nodePrefix "gk" -clusterStorage "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
+          Write-Host "Using $($imageFolder.FullName) for Base Image"
+          Set-Rke2Settings -nodePrefix "gk" -clusterStorage "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
 
-        Write-Host (Get-Rke2Settings | ConvertTo-Json)
+          Write-Host (Get-Rke2Settings | ConvertTo-Json)
 
-        Write-Host "Configure Unifi Client Settings"
-        Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
-        Set-UnifiEnvironmentVariables -provisionUrl $(unifi-url) -provisionGroup $(unifi-provisioning-group)
+          Write-Host "Configure Unifi Client Settings"
+          Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
+          Set-UnifiEnvironmentVariables -provisionUrl $(unifi-url) -provisionGroup $(unifi-provisioning-group)
 
-        Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
-        Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
+          Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
+          Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
 
-        Write-Host "Cycle RKE Cluster"
-        Push-Location "$(Build.SourcesDirectory)\provisioning"
-        $nodes = Deploy-UpdatedRke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
+          Write-Host "Cycle RKE Cluster"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
+          $nodes = Deploy-UpdatedRke2ClusterNodes -clusterName "${{ parameters.clusterName }}" -dnsDomain "${{ parameters.dnsDomain }}" -OutputFolder "D:\Hyper-V\" -maxAgeDays ${{ parameters.maxAgeDays }}
 
-        if ($nodes.Count -gt 0) {
-          echo "##vso[task.setvariable variable=restartNginx;isOutput=true]true"
-        }
-        else {
-          echo "##vso[task.setvariable variable=restartNginx;isOutput=true]false"
-        }
+          if ($nodes.Count -gt 0) {
+            echo "##vso[task.setvariable variable=restartNginx;isOutput=true]true"
+          }
+          else {
+            echo "##vso[task.setvariable variable=restartNginx;isOutput=true]false"
+          }
 
-
-      displayName: Cycle Cluster Nodes
-      name: perform_cycle
-- job: restart_nginx
-  pool:
-    name: Default
-  dependsOn: cluster_cycle
-  condition: eq(dependencies.cluster_cycle.outputs['perform_cycle.restartNginx'], 'true')
-  steps:
-  - task: SSH@0
-    displayName: Restart Nginx Proxy
-    inputs:
-      sshEndpoint: m5proxy 
-      runOptions: 'inline' 
-      inline: sudo systemctl restart nginx.service
-      interpreterCommand: '/bin/bash' 
-      readyTimeout: '20000' 
+        displayName: Cycle Cluster Nodes
+        name: perform_cycle
+  - job: restart_nginx
+    pool:
+      name: Default
+    dependsOn: cluster_cycle
+    condition: eq(dependencies.cluster_cycle.outputs['perform_cycle.restartNginx'], 'true')
+    steps:
+      - task: SSH@0
+        displayName: Restart Nginx Proxy
+        inputs:
+          sshEndpoint: m5proxy
+          runOptions: "inline"
+          inline: sudo systemctl restart nginx.service
+          interpreterCommand: "/bin/bash"
+          readyTimeout: "20000"

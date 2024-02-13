@@ -12,7 +12,7 @@ param (
 # Perform a login using the tokenAppRole/tokenAppRoleSecretId to get a new token for this appRole
 
 $tokenRefreshData = @{
-    role_id = "$tokenAppRole"
+    role_id   = "$tokenAppRole"
     secret_id = "$tokenAppRoleSecretId"
 }
 $tokenAppRoleLoginResult = Invoke-RestMethod -Uri "$($vaultUrl)/v1/auth/approle/login" -Method Post -Body (ConvertTo-Json $tokenRefreshData)
@@ -21,7 +21,7 @@ $newToken = $tokenAppRoleLoginResult.auth.client_token
 
 # Using the appRole/appRoleSecretId, get a token for writing the new secret into vault. 
 $appRoleData = @{
-    role_id = "$appRole"
+    role_id   = "$appRole"
     secret_id = "$appRoleSecretId"
 }
 $appRoleLoginResult = Invoke-RestMethod -Uri "$($vaultUrl)/v1/auth/approle/login" -Method Post -Body (ConvertTo-Json $appRoleData)
@@ -36,7 +36,7 @@ $newSecretData = "
 "
 $headers = @{
     'X-Vault-Token' = "$($appRoleLoginResult.auth.client_token)"
-    'Content-Type' = "application/merge-patch+json"
+    'Content-Type'  = "application/merge-patch+json"
 }
 
 $url = "$($vaultUrl)/v1/$($kvName)/data/$secretPath"

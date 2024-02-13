@@ -17,25 +17,25 @@ pr:
       - terraform/devops/*
       - .devops/pipeline-tf-azure-devops.yaml
 
-# Secrets may change when terraform-azuread runs.  When the 
+# Secrets may change when terraform-azuread runs.  When the
 #  terraform-azuread pipeline runs from main, kick off this build
 resources:
   pipelines:
-  - pipeline: terraform-azuread
-    source: terraform-azuread
-    project: Ops 
-    trigger:
-      branches:
-        include:
-          - main 
+    - pipeline: terraform-azuread
+      source: terraform-azuread
+      project: Ops
+      trigger:
+        branches:
+          include:
+            - main
 
 variables:
-  - group: 'terraform-azure-devops'
-  - group: 'terraform-s3-backend'
-  - group: 'terraform-hcvault'
+  - group: "terraform-azure-devops"
+  - group: "terraform-s3-backend"
+  - group: "terraform-hcvault"
 
 extends:
   template: template-terraform.yaml
   parameters:
-    terraformDirectory: 'terraform/devops'
+    terraformDirectory: "terraform/devops"
     addVaultAuthentication: true
