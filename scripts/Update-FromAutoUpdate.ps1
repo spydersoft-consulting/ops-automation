@@ -41,7 +41,6 @@ if (-not (Test-Path "auto-update.json")) {
         comment = ""
     }
 }
-Add-Type -AssemblyName System.Management.Automation
 $updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
 
 $json = Get-Content $updateFile -Raw | ConvertFrom-Json
@@ -60,6 +59,14 @@ $valuesYaml = Get-Content .\values.yaml -Raw | ConvertFrom-Yaml
 # Get current tag value    
 $expression = "`$valuesYaml.$($json.tagPath)"
 $currentVersion = Invoke-Expression $expression
+
+if ($null -eq $currentVersion) {
+    Pop-Location
+    return @{
+        updated = $false
+        comment = ""
+    }
+}
 
 $versionV = New-Object "System.Management.Automation.SemanticVersion" $version.replace("v", "")
 $currentV = New-Object "System.Management.Automation.SemanticVersion" $currentVersion.replace("v", "")

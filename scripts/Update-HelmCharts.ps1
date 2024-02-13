@@ -36,7 +36,6 @@ Invoke-Expression "helm repo update" | Out-Null
 Write-Host " - Done"
 
 $repos = ConvertFrom-Json (Invoke-Expression "helm repo list -o json")
-Add-Type -AssemblyName System.Management.Automation
 
 foreach ($sourceRepo in $sourceRepos) {
 
@@ -87,7 +86,6 @@ foreach ($sourceRepo in $sourceRepos) {
             }
         }
         $updateScript = Join-Path $scriptRoot "Update-FromAutoUpdate.ps1"
-        Write-Host "Checking for auto-update.json - $($chart.DirectoryName) $chartDisplay"
         $githubUpdate = Invoke-Expression "$updateScript -path $($chart.DirectoryName) -name $chartDisplay"
         if ($githubUpdate.updated) {
             $updated = $true
