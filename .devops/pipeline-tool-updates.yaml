@@ -28,11 +28,31 @@ resources:
       name: spydersoft-consulting/ops-prod-cluster
 
 jobs:
+  - checkout: self
+  - checkout: argo
+    displayName: Checkout Argo
+    clean: all
+    persistCredentials: true
+  - checkout: internal
+    displayName: Checkout Internal
+    clean: all
+    persistCredentials: true
+  - checkout: nonprod
+    displayName: Checkout NonProd
+    clean: all
+    persistCredentials: true
+  - checkout: prod
+    displayName: Checkout Prod
+    clean: all
+    persistCredentials: true
+
   - job: update_libraries
-    displayName: Renew Tokens
+    displayName: Update Cluster Tools
     pool:
       name: Default
     steps:
       - pwsh: |     
           ls $(Build.SourcesDirectory)
+          helm version
+        displayName: 'Add Helm'
 
