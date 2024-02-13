@@ -55,7 +55,7 @@ jobs:
           Import-Module powershell-yaml
         displayName: 'Install YAML Module'
       - pwsh: |
-          $chart = Get-ChildItem -Path $(Build.SourcesDirectory)/external/monitor/grafana/Chart.yaml
+          $chart = Get-ChildItem -Path $(Build.SourcesDirectory)/ops-internal-cluster/external/monitor/grafana/Chart.yaml
           $chartDisplay = "external/monitor/grafana"
           Invoke-Expression "$(Build.SourcesDirectory)/ops-automation/scripts/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay"
       - pwsh: |     
