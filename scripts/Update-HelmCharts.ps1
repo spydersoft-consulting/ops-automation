@@ -55,7 +55,7 @@ foreach ($sourceRepo in $sourceRepos) {
     $hasChanges = $false
     foreach ($chart in $charts) {
 
-        $chartDisplay = $chart.DirectoryName.Replace("$basePath\", "")
+        $chartDisplay = $chart.DirectoryName.Replace("$basePath$([IO.Path]::DirectorySeparatorChar)", "")
         Write-Host "Processing $chartDisplay"
         $yaml = ConvertFrom-Yaml (Get-Content -Raw $chart)
         $updated = $false
@@ -86,8 +86,9 @@ foreach ($sourceRepo in $sourceRepos) {
                 $updated = $true
             }
         }
-
-        $githubUpdate = Invoke-Expression "$($scriptRoot)/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay"
+        $updateScript = Join-Path $scriptRoot "Update-FromAutoUpdate.ps1"
+        Write-Host "Checking for auto-update.json - $($chart.DirectoryName) $chartDisplay"
+        $githubUpdate = Invoke-Expression "$updateScript -path $($chart.DirectoryName) -name $chartDisplay"
         if ($githubUpdate.updated) {
             $updated = $true
             $commitComment += $githubUpdate.comment
