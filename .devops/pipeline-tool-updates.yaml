@@ -57,8 +57,8 @@ jobs:
       - pwsh: |
           $chart = Get-ChildItem -Path $(Build.SourcesDirectory)/ops-internal-cluster/external/monitor/grafana/Chart.yaml
           $chartDisplay = "external/monitor/grafana"
-          echo "$(Build.SourcesDirectory)/ops-automation/scripts/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay"
-          "$(Build.SourcesDirectory)/ops-automation/scripts/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay" | Invoke-Expression
+          echo "$(Build.SourcesDirectory)/ops-automation/scripts/Update-FromAutoUpdate.ps1 -path `"$($chart.DirectoryName)`" -name `"$chartDisplay`""
+          "$(Build.SourcesDirectory)/ops-automation/scripts/Update-FromAutoUpdate.ps1 -path `"$($chart.DirectoryName)`" -name `"$chartDisplay`"" | Invoke-Expression
       - pwsh: |     
           $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmRepositoryList.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
 
