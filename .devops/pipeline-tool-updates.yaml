@@ -1,0 +1,38 @@
+trigger: none
+pr: none
+schedules:
+- cron: "0 0 * * 0"
+  displayName: "Renew Tokens"
+  always: true
+  branches:
+    include: 
+      - main
+
+resources:
+  repositories:
+    - repository: argo
+      type: github
+      endpoint: "Github"
+      name: spydersoft-consulting/ops-argo
+    - repository: internal
+      type: github
+      endpoint: "Github"
+      name: spydersoft-consulting/ops-internal
+    - repository: nonprod
+      type: github
+      endpoint: "Github"
+      name: spydersoft-consulting/ops-nonprod
+    - repository: prod
+      type: github
+      endpoint: "Github"
+      name: spydersoft-consulting/ops-prod
+
+jobs:
+  - job: update_libraries
+    displayName: Renew Tokens
+    pool:
+      name: Default
+    steps:
+      - pwsh: |     
+          ls $(Build.SourcesDirectory)
+
