@@ -17,15 +17,15 @@ resources:
     - repository: internal
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-internal
+      name: spydersoft-consulting/ops-internal-cluster
     - repository: nonprod
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-nonprod
+      name: spydersoft-consulting/ops-nonprod-cluster
     - repository: prod
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-prod
+      name: spydersoft-consulting/ops-prod-cluster
 
 jobs:
   - job: update_libraries
