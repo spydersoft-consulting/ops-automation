@@ -30,6 +30,7 @@ foreach ($sourceRepo in $sourceRepos) {
 
     Write-Host "Processing $sourceRepo"
     Push-Location $sourceRepo
+    Invoke-Expression "git checkout main"
     Invoke-Expression "git pull"
 
     $charts = get-childitem chart.yaml -Recurse 
