@@ -41,7 +41,7 @@ if (-not (Test-Path "auto-update.json")) {
         comment = ""
     }
 }
-
+Add-Type -AssemblyName System.Management.Automation
 $updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
 
 $json = Get-Content $updateFile -Raw | ConvertFrom-Json
