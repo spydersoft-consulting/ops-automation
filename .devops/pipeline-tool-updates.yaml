@@ -59,7 +59,7 @@ jobs:
 
         displayName: 'Add Helm Repositories'
       - pwsh: |
-          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmCharts.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
+          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmCharts.ps1 -scriptRoot $(Build.SourcesDirectory)/ops-automation/scripts -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
 
         displayName: 'Execute Helm Update'
 
