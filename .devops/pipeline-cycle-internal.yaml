@@ -5,7 +5,7 @@ pr: none
 #   displayName: "Internal Cluster Agent Cycling"
 #   always: true
 #   branches:
-#     include: 
+#     include:
 #       - main
 
 extends:

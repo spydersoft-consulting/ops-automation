@@ -8,54 +8,54 @@ resources:
 trigger: none
 pr: none
 schedules:
-- cron: "0 0 * * 6"
-  always: true
-  displayName: "Weekly Base Build"
-  branches:
-    include: 
-    - main
+  - cron: "0 0 * * 6"
+    always: true
+    displayName: "Weekly Base Build"
+    branches:
+      include:
+        - main
 
 jobs:
-- job: build_base
-  displayName: Build Base Image
-  timeoutInMinutes: 60
-  pool:
-    name: Provisioning
-  steps:
-    - checkout: self
-      path: s/automation
-    - checkout: provisioning
-      path: s/provisioning
-    - task: DownloadSecureFile@1
-      name: secretvars
-      inputs:
-        secureFile: ubuntu-base-secrets.pkrvars.hcl
-    - pwsh: |     
-        $addPath = "C:\Program Files\OpenSSL-Win64\bin"
-        $regexAddPath = [regex]::Escape($addPath)
-        $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
-        $env:Path = ($arrPath + $addPath) -join ';'
-        Write-Host "Import provisioning modules"
-        Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+  - job: build_base
+    displayName: Build Base Image
+    timeoutInMinutes: 60
+    pool:
+      name: Provisioning
+    steps:
+      - checkout: self
+        path: s/automation
+      - checkout: provisioning
+        path: s/provisioning
+      - task: DownloadSecureFile@1
+        name: secretvars
+        inputs:
+          secureFile: ubuntu-base-secrets.pkrvars.hcl
+      - pwsh: |
+          $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+          $regexAddPath = [regex]::Escape($addPath)
+          $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+          $env:Path = ($arrPath + $addPath) -join ';'
+          Write-Host "Import provisioning modules"
+          Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
-        Write-Host "Build Base Image"
-        Push-Location "$(Build.SourcesDirectory)\provisioning"
-        Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
+          Write-Host "Build Base Image"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
+          Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
 
-        New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(Build.BuildNumber)"
+          New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(Build.BuildNumber)"
 
-      displayName: Build Ubuntu Base Image
-    - task: CopyFiles@2
-      displayName: Copy Files to Synology
-      inputs:
-        SourceFolder: $(Build.StagingDirectory)\bases\
-        Contents: "**"
-        TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)"
-        OverWrite: true
-    - pwsh: |
-        $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
-        if ($currentBaseCount -gt 3) {
-          $deleteCount = $currentBaseCount - 3
-          get-childitem "\\cloud.gerega.net\Images\bases" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
-        }
-      displayName: Cleanup Old Images
+        displayName: Build Ubuntu Base Image
+      - task: CopyFiles@2
+        displayName: Copy Files to Synology
+        inputs:
+          SourceFolder: $(Build.StagingDirectory)\bases\
+          Contents: "**"
+          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)"
+          OverWrite: true
+      - pwsh: |
+          $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
+          if ($currentBaseCount -gt 3) {
+            $deleteCount = $currentBaseCount - 3
+            get-childitem "\\cloud.gerega.net\Images\bases" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
+          }
+        displayName: Cleanup Old Images

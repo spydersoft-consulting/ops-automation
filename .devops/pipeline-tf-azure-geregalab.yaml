@@ -16,16 +16,15 @@ pr:
     include:
       - terraform/geregalab/*
       - .devops/pipeline-tf-azure-geregalab.yaml
-      
 
 variables:
-  - group: 'terraform-gerega-lab'
-  - group: 'terraform-s3-backend'
-  - group: 'terraform-hcvault'
+  - group: "terraform-gerega-lab"
+  - group: "terraform-s3-backend"
+  - group: "terraform-hcvault"
 
 extends:
   template: template-terraform.yaml
   parameters:
-    terraformDirectory: 'terraform/geregalab'
+    terraformDirectory: "terraform/geregalab"
     addVaultAuthentication: true
-    planArguments: '-var-file config/gerega.tfvars'
+    planArguments: "-var-file config/gerega.tfvars"

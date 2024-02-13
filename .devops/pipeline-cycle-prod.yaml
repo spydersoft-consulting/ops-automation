@@ -5,7 +5,7 @@ pr: none
 #   displayName: "Production Cluster Agent Cycling"
 #   always: true
 #   branches:
-#     include: 
+#     include:
 #       - main
 extends:
   template: template-clustercycle.yaml
