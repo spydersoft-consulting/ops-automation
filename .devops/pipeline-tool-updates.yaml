@@ -51,7 +51,11 @@ jobs:
         clean: all
         persistCredentials: true
       - pwsh: |     
-          ls $(Build.SourcesDirectory)
-          helm version
-        displayName: 'Add Helm'
+          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmRepositoryList.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
+
+        displayName: 'Add Helm Repositories'
+      - pwsh: |     
+          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmCharts.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
+
+        displayName: 'Execute Helm Update'
 
