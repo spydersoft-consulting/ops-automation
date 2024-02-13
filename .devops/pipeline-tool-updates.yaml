@@ -1,12 +1,12 @@
 trigger: none
 pr: none
 schedules:
-- cron: "0 0 * * 0"
-  displayName: "Renew Tokens"
-  always: true
-  branches:
-    include: 
-      - main
+  - cron: "0 8 * * 1-5"
+    displayName: "Update Cluster Tools"
+    always: true
+    branches:
+      include:
+        - main
 
 resources:
   repositories:
@@ -17,22 +17,46 @@ resources:
     - repository: internal
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-internal
+      name: spydersoft-consulting/ops-internal-cluster
     - repository: nonprod
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-nonprod
+      name: spydersoft-consulting/ops-nonprod-cluster
     - repository: prod
       type: github
       endpoint: "Github"
-      name: spydersoft-consulting/ops-prod
+      name: spydersoft-consulting/ops-prod-cluster
 
 jobs:
   - job: update_libraries
-    displayName: Renew Tokens
+    displayName: Update Cluster Tools
     pool:
       name: Default
     steps:
-      - pwsh: |     
-          ls $(Build.SourcesDirectory)
-
+      - checkout: self
+      - checkout: argo
+        displayName: Checkout Argo
+        clean: all
+        persistCredentials: true
+      - checkout: internal
+        displayName: Checkout Internal
+        clean: all
+        persistCredentials: true
+      - checkout: nonprod
+        displayName: Checkout NonProd
+        clean: all
+        persistCredentials: true
+      - checkout: prod
+        displayName: Checkout Prod
+        clean: all
+        persistCredentials: true
+      - pwsh: |
+          Install-Module powershell-yaml -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser
+          Import-Module powershell-yaml
+        displayName: "Install YAML Module"
+      - pwsh: |
+          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmRepositoryList.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
+        displayName: "Add Helm Repositories"
+      - pwsh: |
+          $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmCharts.ps1 -scriptRoot $(Build.SourcesDirectory)/ops-automation/scripts -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
+        displayName: "Execute Helm Update"
