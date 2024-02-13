@@ -34,18 +34,15 @@ param (
 
 Push-Location $path
 
-$error.Clear();
-
-$updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
-
-if ($error.Count -gt 0) {
-    $error.Clear();
+if (-not (Test-Path "auto-update.json")) {
     Pop-Location
     return @{
         updated = $false
         comment = ""
     }
 }
+
+$updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
 
 $json = Get-Content $updateFile -Raw | ConvertFrom-Json
 
