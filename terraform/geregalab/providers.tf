@@ -17,7 +17,7 @@ provider "azurerm" {
     }
   }
   skip_provider_registration = true
-  subscription_id = var.subscription_id
+  subscription_id            = var.subscription_id
 }
 
 provider "azuread" {
@@ -25,7 +25,7 @@ provider "azuread" {
 }
 
 provider "vault" {
-  address = "https://hcvault.mattgerega.net"
+  address          = "https://hcvault.mattgerega.net"
   skip_child_token = true
   auth_login {
     path = "auth/approle/login"

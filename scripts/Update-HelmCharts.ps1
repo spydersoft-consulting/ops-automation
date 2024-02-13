@@ -62,10 +62,10 @@ foreach ($sourceRepo in $sourceRepos) {
             $name = $yaml.dependencies[$index].name
             $version = New-Object "System.Management.Automation.SemanticVersion" $yaml.dependencies[$index].version.replace("v", "")
             $url = $yaml.dependencies[$index].repository
-            $repo = $repos | Where-Object {$_.url -eq $url} | Select-Object -First 1
+            $repo = $repos | Where-Object { $_.url -eq $url } | Select-Object -First 1
             
             $searchResult = ConvertFrom-Json (Invoke-Expression "helm search repo $($repo.name)/$name -o json")
-            $singleResult = $searchResult | Where-Object { $_.name -eq "$($repo.name)/$name"} | Select-Object -First 1
+            $singleResult = $searchResult | Where-Object { $_.name -eq "$($repo.name)/$name" } | Select-Object -First 1
 
             $newVersion = $singleResult.version
             $repoVersion = New-Object "System.Management.Automation.SemanticVersion" $newVersion.replace("v", "")

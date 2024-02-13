@@ -40,7 +40,7 @@ foreach ($sourceRepo in $sourceRepos) {
         $yaml = ConvertFrom-Yaml (Get-Content -Raw $chart)
         for ($index = 0; $index -lt $yaml.dependencies.Count; $index++) {
             $url = $yaml.dependencies[$index].repository
-            if ($null -eq ($currentHelmRepos | Where-Object {$_.url -eq $url})) {
+            if ($null -eq ($currentHelmRepos | Where-Object { $_.url -eq $url })) {
                 $name = $yaml.dependencies[$index].name.Replace("https://", "").Replace(".", "-").Replace("/", "-");
                 
                 Write-Host "Adding $url with name $name"
