@@ -25,10 +25,9 @@
 
 param (
     $basePath,
-    $sourceRepos = @()
+    $sourceRepos = @(),
+    $scriptRoot = $PSScriptRoot
 )
-
-
 
 Push-Location $basePath
 
@@ -88,7 +87,7 @@ foreach ($sourceRepo in $sourceRepos) {
             }
         }
 
-        $githubUpdate = Invoke-Expression "$PSScriptRoot/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay"
+        $githubUpdate = Invoke-Expression "$scriptRoot/Update-FromAutoUpdate.ps1 -path $($chart.DirectoryName) -name $chartDisplay"
         if ($githubUpdate.updated) {
             $updated = $true
             $commitComment += $githubUpdate.comment
