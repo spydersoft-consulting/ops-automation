@@ -21,4 +21,9 @@ data "vault_kv_secret_v2" "s3-backend" {
   name  = "minio/terraform-access"
 }
 
+data "vault_kv_secret_v2" "spydersoft-gh-token" {
+  mount = "secrets-infra"
+  name  = "github/spydersoft-ado"
+}
+
 
