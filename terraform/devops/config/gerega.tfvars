@@ -1,1 +1,1 @@
-minio_address="https://storage.mattgerega.net"
+minio_address="https://s3.mattgerega.net"
