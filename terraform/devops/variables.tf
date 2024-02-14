@@ -10,3 +10,8 @@ variable "vault_approle_secret_id" {
   type        = string
   sensitive   = true
 }
+
+variable "minio_address" {
+  description = "MinIO Address"
+  type        = string
+}
