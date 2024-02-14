@@ -39,3 +39,4 @@ extends:
   parameters:
     terraformDirectory: "terraform/devops"
     addVaultAuthentication: true
+    planArguments: "-var-file config/gerega.tfvars"
