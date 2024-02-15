@@ -21,4 +21,33 @@ data "vault_kv_secret_v2" "s3-backend" {
   name  = "minio/terraform-access"
 }
 
+data "vault_kv_secret_v2" "spydersoft-gh-token" {
+  mount = "secrets-infra"
+  name  = "github/spydersoft-ado"
+}
+
+data "vault_kv_secret_v2" "sonarqube-ado-public-projects" {
+  mount = "secrets-infra"
+  name  = "sonarqube/ado-public-projects"
+}
+
+data "vault_kv_secret_v2" "proget-nuget" {
+  mount = "secrets-infra"
+  name  = "proget/nuget"
+}
+
+data "vault_kv_secret_v2" "proget-docker" {
+  mount = "secrets-infra"
+  name  = "proget/docker"
+}
+
+data "vault_kv_secret_v2" "k8-nonprod-kubeconfig" {
+  mount = "secrets-infra"
+  name  = "kubernetes/nonproduction/kubeconfig"
+}
+
+data "vault_kv_secret_v2" "k8-prod-kubeconfig" {
+  mount = "secrets-infra"
+  name  = "kubernetes/production/kubeconfig"
+}
 
