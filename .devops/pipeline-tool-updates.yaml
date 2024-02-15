@@ -27,6 +27,9 @@ resources:
       endpoint: "Github"
       name: spydersoft-consulting/ops-prod-cluster
 
+variables:
+  - group: "git-identity-variables"
+
 jobs:
   - job: update_libraries
     displayName: Update Cluster Tools
@@ -54,6 +57,10 @@ jobs:
           Install-Module powershell-yaml -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser
           Import-Module powershell-yaml
         displayName: "Install YAML Module"
+      - pwsh: |
+          git config --global user.email "$(git-email)"
+          git config --global user.name "$(git-name)"
+
       - pwsh: |
           $(Build.SourcesDirectory)/ops-automation/scripts/Update-HelmRepositoryList.ps1 -basePath $(Build.SourcesDirectory) -sourceRepos $("ops-argo", "ops-internal-cluster", "ops-nonprod-cluster", "ops-prod-cluster")
         displayName: "Add Helm Repositories"
