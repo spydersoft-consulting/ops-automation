@@ -1,6 +1,6 @@
 resource "azuredevops_build_definition" "techradar-helm-deploy" {
   project_id = azuredevops_project.public.id
-  name       = "spydersoft-consulting.techradar-helm-deploy"
+  name       = "techradar-helm-deploy"
   path       = "\\Tech Radar"
 
   ci_trigger {
