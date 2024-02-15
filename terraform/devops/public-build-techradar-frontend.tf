@@ -1,6 +1,6 @@
 resource "azuredevops_build_definition" "techradar-frontend" {
   project_id = azuredevops_project.public.id
-  name       = "spydersoft-consulting.techradar-frontend"
+  name       = "techradar-frontend"
   path       = "\\Tech Radar"
 
   ci_trigger {

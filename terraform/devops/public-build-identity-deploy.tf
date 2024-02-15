@@ -1,7 +1,7 @@
-resource "azuredevops_build_definition" "unifi-ipmanager-api" {
+resource "azuredevops_build_definition" "identity-helm-deploy" {
   project_id = azuredevops_project.public.id
-  name       = "unifi-ipmanager-build"
-  path       = "\\Unifi"
+  name       = "identity-helm-deploy"
+  path       = "\\Identity"
 
   ci_trigger {
     use_yaml = true
@@ -20,7 +20,7 @@ resource "azuredevops_build_definition" "unifi-ipmanager-api" {
     branch_name           = "refs/heads/main"
     service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
     repo_type             = "GitHub"
-    repo_id               = "spyder007/unifi-ipmanager"
-    yml_path              = ".devops/pipeline-ci.yml"
+    repo_id               = "spyder007/id-helm-config"
+    yml_path              = ".devops/pipeline-main.yml"
   }
 }

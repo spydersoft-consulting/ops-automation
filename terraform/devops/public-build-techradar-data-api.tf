@@ -1,6 +1,6 @@
 resource "azuredevops_build_definition" "techradar-data-api" {
   project_id = azuredevops_project.public.id
-  name       = "spydersoft-consulting.techradar-data-api"
+  name       = "techradar-data-api"
   path       = "\\Tech Radar"
 
   ci_trigger {
