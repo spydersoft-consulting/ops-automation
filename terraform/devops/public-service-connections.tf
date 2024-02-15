@@ -48,6 +48,18 @@ resource "azuredevops_serviceendpoint_kubernetes" "public-k8-nonprod" {
   }
 }
 
+resource "azuredevops_serviceendpoint_kubernetes" "public-k8-prod" {
+  project_id            = azuredevops_project.public.id
+  service_endpoint_name = "k8-prod"
+  apiserver_url         = "https://cp-production.gerega.net"
+  authorization_type    = "Kubeconfig"
+
+  kubeconfig {
+    kube_config            = data.vault_kv_secret_v2.k8-prod-kubeconfig.data["data"]
+    accept_untrusted_certs = true
+  }
+}
+
 resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
   project_id            = azuredevops_project.public.id
   docker_registry       = "https://proget.mattgerega.com"
