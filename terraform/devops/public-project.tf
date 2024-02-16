@@ -1,6 +1,6 @@
 resource "azuredevops_project" "public" {
   name               = "Public Projects"
-  visibility         = "private"
+  visibility         = "public"
   version_control    = "Git"
   work_item_template = "Basic"
   description        = "Pipelines for public projects.  Managed by Terraform."
