@@ -45,14 +45,31 @@ $updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
 
 $json = Get-Content $updateFile -Raw | ConvertFrom-Json
 
-$latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($json.repository)/releases/latest"
-
-$version = $latest.tag_name
-if ($json.stripVFromVersion) {
-    $version = $version.Trim("v");
+$type = "github"
+if ($null -ne $json.type) {
+    $type = $json.type
 }
 
+if ($type -eq "github") {
+    $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($json.repository)/releases/latest"
 
+    $version = $latest.tag_name
+    if ($json.stripVFromVersion) {
+        $version = $version.Trim("v");
+    }
+    $versionV = New-Object "System.Management.Automation.SemanticVersion" $version.replace("v", "")
+}
+elseif ($type -eq "docker") {
+    
+    $registryUrl = "https://registry.hub.docker.com/v2"
+    if (-not [String]::IsNullOrWhiteSpace($json.registryUrl)) {
+        $registryUrl = $json.registryUrl
+    }
+
+    $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($json.repository)/tags/list"
+    $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object { New-Object "System.Management.Automation.SemanticVersion" $_ } | Sort-Object -descending | Select-Object -First 1
+    $version = $versionV.ToString()
+}
 
 $valuesYaml = Get-Content .\values.yaml -Raw | ConvertFrom-Yaml
 
@@ -68,7 +85,7 @@ if ($null -eq $currentVersion) {
     }
 }
 
-$versionV = New-Object "System.Management.Automation.SemanticVersion" $version.replace("v", "")
+
 $currentV = New-Object "System.Management.Automation.SemanticVersion" $currentVersion.replace("v", "")
 if ($currentV -ge $versionV) {
     Pop-Location
