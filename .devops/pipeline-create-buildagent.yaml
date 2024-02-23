@@ -35,7 +35,7 @@ jobs:
       #     Push-Location "$(Build.SourcesDirectory)\provisioning"
       #     git submodule update --init --recursive
       #   displayName: "Update Submodules"
-      - powershell: |
+      - pwsh: |
           Install-Module powershell-yaml -Force
 
           $addPath = "C:\Program Files\OpenSSL-Win64\bin"
