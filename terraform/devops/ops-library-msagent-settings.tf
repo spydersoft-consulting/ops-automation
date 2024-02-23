@@ -10,7 +10,7 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
   }
 
   variable {
-    name         = "agent-username"
+    name  = "agent-username"
     value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_username"]
   }
 
@@ -33,11 +33,11 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
   }
 
   variable {
-    name         = "unifi-wrapper-url"
+    name  = "unifi-wrapper-url"
     value = var.unifi_wrapper_url
   }
   variable {
-    name         = "unifi-provisioning-group"
+    name  = "unifi-provisioning-group"
     value = var.unifi_provisioning_group
   }
 }
