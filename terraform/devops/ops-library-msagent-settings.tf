@@ -11,18 +11,18 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
 
   variable {
     name         = "agent-username"
-    value = data.vault_kv_secret_v2.mg-authentication.data["clientId"]
+    value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_username"]
   }
 
   variable {
     name         = "agent-password"
-    secret_value = data.vault_kv_secret_v2.mg-authentication.data["clientSecret"]
+    secret_value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_password"]
     is_secret    = true
   }
 
   variable {
     name         = "agent-pat"
-    secret_value = data.vault_kv_secret_v2.mg-authentication.data["password"]
+    secret_value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_pat"]
     is_secret    = true
   }
 
