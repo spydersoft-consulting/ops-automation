@@ -1,5 +1,12 @@
 trigger: none
 pr: none
+schedules:
+  - cron: "0 3 * * 0"
+    displayName: "Build Agent Creation"
+    always: true
+    branches:
+      include:
+        - main
 
 resources:
   repositories:
@@ -13,9 +20,9 @@ variables:
   - group: ms-agent-settings
 
 jobs:
-  - job: cluster_cycle
-    displayName: Cycle Cluster
-    timeoutInMinutes: 180
+  - job: create_build_agent
+    displayName: Create Build Agent
+    timeoutInMinutes: 560
     pool:
       name: Provisioning
     steps:
@@ -44,16 +51,16 @@ jobs:
           "cpus = 4" | Add-Content $secretPath
           "memory = 8192" | Add-Content $secretPath
           "disk_size = 128000" | Add-Content $secretPath
-          "files_dirs = [\"./templates/buildagents/files/\"]" | Add-Content $secretPath
-          "ms_agent_pool = \"Default\"" | Add-Content $secretPath
-          "username = \"$(agent-username)\"" | Add-Content $secretPath
-          "password = \"$(agent-password)\"" | Add-Content $secretPath
-          "ms_agent_org_url = \"https://dev.azure.com/$(agent-org)\"" | Add-Content $secretPath
-          "ms_agent_pat = \"$(agent-pat)\"" | Add-Content $secretPath
+          "files_dirs = [`"./templates/buildagents/files/`"]" | Add-Content $secretPath
+          "ms_agent_pool = `"Default`"" | Add-Content $secretPath
+          "username = `"$(agent-username)`"" | Add-Content $secretPath
+          "password = `"$(agent-password)`"" | Add-Content $secretPath
+          "ms_agent_org_url = `"https://dev.azure.com/$(agent-org)`"" | Add-Content $secretPath
+          "ms_agent_pat = `"$(agent-pat)`"" | Add-Content $secretPath
 
           $agent_version = (Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest).tag_name.Replace("v", "")
-          "ms_agent_url = \"https://vstsagentpackage.azureedge.net/agent/$($agent_version)\"" | Add-Content $secretPath
-          "ms_agent_filename = \"vsts-agent-linux-x64-$($agent_version).tar.gz\"" | Add-Content $secretPath
+          "ms_agent_url = `"https://vstsagentpackage.azureedge.net/agent/$($agent_version)`"" | Add-Content $secretPath
+          "ms_agent_filename = `"vsts-agent-linux-x64-$($agent_version).tar.gz`"" | Add-Content $secretPath
 
           Write-Host "Configure Unifi Client Settings"
           Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
@@ -62,9 +69,9 @@ jobs:
           Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
           Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
 
-          Write-Host "Cycle RKE Cluster"
+          Write-Host "Create Build Agent"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          ##.\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\"
+          .\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\"
 
         displayName: Create New Build Agent
-        name: perform_cycle
+        name: create_agent
