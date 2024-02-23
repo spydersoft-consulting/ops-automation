@@ -31,7 +31,7 @@ jobs:
       - checkout: provisioning
         path: s/provisioning
       - powershell: |
-          Push-Location "$(Build.SourcesDirectory)\s\provisioning"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
           git submodule update --init --recursive
         displayName: "Update Submodules"
       - powershell: |
