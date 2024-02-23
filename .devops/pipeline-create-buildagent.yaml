@@ -30,6 +30,7 @@ jobs:
         path: s/automation
       - checkout: provisioning
         path: s/provisioning
+        submodules: recursive
       - powershell: |
           Install-Module powershell-yaml -Force
 
