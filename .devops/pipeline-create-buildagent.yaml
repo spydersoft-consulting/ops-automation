@@ -30,7 +30,10 @@ jobs:
         path: s/automation
       - checkout: provisioning
         path: s/provisioning
-        submodules: recursive
+      - powershell: |
+          Push-Location "$(Build.SourcesDirectory)\s\provisioning"
+          git submodule update --init --recursive
+        displayName: "Update Submodules"
       - powershell: |
           Install-Module powershell-yaml -Force
 
