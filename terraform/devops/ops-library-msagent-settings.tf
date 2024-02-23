@@ -10,19 +10,19 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
   }
 
   variable {
-    name         = "agent-username"
-    value = data.vault_kv_secret_v2.mg-authentication.data["clientId"]
+    name  = "agent-username"
+    value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_username"]
   }
 
   variable {
     name         = "agent-password"
-    secret_value = data.vault_kv_secret_v2.mg-authentication.data["clientSecret"]
+    secret_value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_password"]
     is_secret    = true
   }
 
   variable {
     name         = "agent-pat"
-    secret_value = data.vault_kv_secret_v2.mg-authentication.data["password"]
+    secret_value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_pat"]
     is_secret    = true
   }
 
@@ -33,11 +33,11 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
   }
 
   variable {
-    name         = "unifi-wrapper-url"
+    name  = "unifi-wrapper-url"
     value = var.unifi_wrapper_url
   }
   variable {
-    name         = "unifi-provisioning-group"
+    name  = "unifi-provisioning-group"
     value = var.unifi_provisioning_group
   }
 }

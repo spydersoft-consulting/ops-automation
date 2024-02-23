@@ -10,7 +10,7 @@ resource "azuredevops_variable_group" "auth-api-credentials" {
   }
 
   variable {
-    name         = "auth-client-id"
+    name  = "auth-client-id"
     value = data.vault_kv_secret_v2.mg-authentication.data["clientId"]
   }
 
@@ -21,7 +21,7 @@ resource "azuredevops_variable_group" "auth-api-credentials" {
   }
 
   variable {
-    name         = "auth-username"
+    name  = "auth-username"
     value = data.vault_kv_secret_v2.mg-authentication.data["username"]
   }
 
