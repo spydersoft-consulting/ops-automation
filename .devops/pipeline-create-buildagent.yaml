@@ -75,7 +75,7 @@ jobs:
 
           Write-Host "Create Build Agent"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          .\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\"
+          .\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\" -secretVariableFile "$secretPath"
 
         displayName: Create New Build Agent
         name: create_agent
