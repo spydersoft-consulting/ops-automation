@@ -51,3 +51,15 @@ data "vault_kv_secret_v2" "k8-prod-kubeconfig" {
   name  = "kubernetes/production/kubeconfig"
 }
 
+data "vault_kv_secret_v2" "mg-authentication" {
+  mount = "secrets-infra"
+  name  = "mattgerega/authentication/ro_client"
+}
+data "vault_kv_secret_v2" "azure-agent-settings" {
+  mount = "secrets-infra"
+  name  = "azure/buildagent/ubuntu"
+}
+data "vault_kv_secret_v2" "authorized-keys" {
+  mount = "secrets-infra"
+  name  = "access/authorized_keys"
+}

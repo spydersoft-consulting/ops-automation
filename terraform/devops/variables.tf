@@ -25,3 +25,13 @@ variable "git_name" {
   description = "Name associated with Git commits"
   type        = string
 }
+
+variable "unifi_wrapper_url" {
+  description = "URL for the Unifi Wrapper"
+  type        = string
+}
+
+variable "unifi_provisioning_group" {
+  description = "Unifi Provisioning Group"
+  type        = string
+}
