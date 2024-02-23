@@ -1,0 +1,56 @@
+trigger: none
+pr: none
+schedules:
+  - cron: "0 13 * * 0"
+    displayName: "Cleanup Agents"
+    always: true
+    branches:
+      include:
+        - main
+
+resources:
+  repositories:
+    - repository: provisioning
+      type: github
+      endpoint: "Github"
+      name: spyder007/provisioning-projects
+
+variables:
+  - group: auth-api-credentials
+  - group: ms-agent-settings
+
+jobs:
+  - job: cleanup_build_agents
+    displayName: Cleanup Build Agents
+    timeoutInMinutes: 560
+    pool:
+      name: Provisioning
+    steps:
+      - checkout: self
+        path: s/automation
+      - checkout: provisioning
+        path: s/provisioning
+        submodules: recursive
+      - pwsh: |
+          Install-Module powershell-yaml -Force
+
+          $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+          $regexAddPath = [regex]::Escape($addPath)
+          $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+          $env:Path = ($arrPath + $addPath) -join ';'
+          Write-Host "Import provisioning modules"
+          Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+          Write-Host "Configure Unifi Client Settings"
+          Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
+          Set-UnifiEnvironmentVariables -provisionUrl $(unifi-wrapper-url) -provisionGroup $(unifi-provisioning-group)
+
+          Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
+          Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
+
+          Write-Host "Cleanup Old Build Agents"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
+          .\Delete-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default" -agentUser "$(agent-username)" -agentPassword "$(agent-password)"
+
+        displayName: Cleanup Old Build Agents
+        name: cleanup_build_agents
