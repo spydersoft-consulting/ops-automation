@@ -1,5 +1,12 @@
 trigger: none
 pr: none
+schedules:
+  - cron: "0 3 * * 1"
+    displayName: "Build Agent Creation"
+    always: true
+    branches:
+      include:
+        - main
 
 resources:
   repositories:
@@ -62,9 +69,9 @@ jobs:
           Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
           Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
 
-          Write-Host "Cycle RKE Cluster"
+          Write-Host "Create Build Agent"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          ##.\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\"
+          .\Create-NewBuildAgent.ps1 -type ubuntu-2204 -OutputFolder "D:\\Hyper-V\\"
 
         displayName: Create New Build Agent
-        name: perform_cycle
+        name: create_agent
