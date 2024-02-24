@@ -15,6 +15,11 @@ resource "azuredevops_variable_group" "ms-agent-settings" {
   }
 
   variable {
+    name  = "devops-username"
+    value = data.vault_kv_secret_v2.azure-agent-settings.data["devops_username"]
+  }
+
+  variable {
     name         = "agent-password"
     secret_value = data.vault_kv_secret_v2.azure-agent-settings.data["agent_password"]
     is_secret    = true
