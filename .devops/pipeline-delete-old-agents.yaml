@@ -49,7 +49,7 @@ jobs:
 
           Write-Host "Cleanup Old Build Agents"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          .\Delete-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default" -agentUser "$(agent-username)" -agentPassword "$(agent-password)"
+          .\Delete-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default"
 
         displayName: Cleanup Old Build Agents
         name: cleanup_build_agents
