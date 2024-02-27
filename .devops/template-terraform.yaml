@@ -30,11 +30,29 @@ jobs:
       - pwsh: |
           $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
           if ($addVaultAuthentication) {
-            terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan
+            terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan -detailed-exitcode
           }
           else {
-            terraform plan ${{ parameters.planArguments }} -out tf.plan
+            terraform plan ${{ parameters.planArguments }} -out tf.plan -detailed-exitcode
           }
+
+          $exitCode = $LASTEXITCODE
+
+          $changes = false;
+          if ($exitCode -eq 2) {
+            Write-Host "Changes detected"
+            $changes = true;
+            terraform show -json tf.plan > plan.json
+            $plan = get-content -raw plan.json | convertfrom-json
+            $hasDestructiveChanges = ($plan.resource_changes | ? { $_.change.actions -contains "delete" } | Measure).Count -gt 0
+            
+            if ($hasDestructiveChanges) {
+              Write-Host "Destructive changes detected"
+              
+            }
+          }
+          Write-Host "##vso[task.setvariable variable=TERRAFORM_PLAN_HAS_CHANGES]$hasDestructiveChanges"
+          Write-Host "##vso[task.setvariable variable=TERRAFORM_PLAN_HAS_DESTRUCTIVE_CHANGES]$hasDestructiveChanges"
 
           terraform show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
         displayName: "Plan"
