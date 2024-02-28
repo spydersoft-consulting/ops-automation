@@ -108,6 +108,19 @@ stages:
               artifactName: "${{ parameters.artifactName }}"
               targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
           - pwsh: |
+              terraform init
+            displayName: "Initialize"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            env:
+              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+          - pwsh: |
               terraform apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
@@ -158,6 +171,19 @@ stages:
               buildType: "current"
               artifactName: "${{ parameters.artifactName }}"
               targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+          - pwsh: |
+              terraform init
+            displayName: "Initialize"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            env:
+              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
           - pwsh: |
               terraform apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
