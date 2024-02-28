@@ -55,11 +55,11 @@ stages:
                 
                 if ($hasDestructiveChanges) {
                   "##vso[task.logissue type=warning]Changes with destroy detected, pipeline will require a manual approval to proceed"
-                  Write-Host "##vso[task.setvariable variable=HAS_DESTROY_CHANGES;isOutput=true]$hasDestructiveChanges"
+                  Write-Host "##vso[task.setvariable variable=HAS_DESTROY_CHANGES;isOutput=true]true"
                 }
                 else {
                   echo "##vso[task.logissue type=warning]Changes with no destroys detected, it is safe for the pipeline to proceed automatically"
-                  Write-Host "##vso[task.setvariable variable=HAS_CHANGES_ONLY;isOutput=true]$hasDestructiveChanges"
+                  Write-Host "##vso[task.setvariable variable=HAS_CHANGES_ONLY;isOutput=true]true"
                 }
               }                          
 
