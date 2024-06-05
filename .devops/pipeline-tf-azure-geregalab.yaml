@@ -1,3 +1,11 @@
+schedules:
+  - cron: "0 1 * * *"
+    displayName: Daily 1 AM build
+    branches:
+      include:
+        - main
+    always: true
+
 trigger:
   branches:
     include:
