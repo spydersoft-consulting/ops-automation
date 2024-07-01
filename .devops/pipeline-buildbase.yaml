@@ -63,14 +63,14 @@ jobs:
           Contents: "**"
           TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\${{ parameters.ubuntu_version }}\\ubuntu-$(Build.BuildNumber)"
           OverWrite: true
-      - pwsh: |
-          Remove-Item -Recurse -Force "$(Build.StagingDirectory)\bases\"
-          Remove-Item -Recurse -Force "$(Build.SourcesDirectory)\provisioning\packer_cache"
-        displayName: Cleanup Build Agent
-      - pwsh: |
-          $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
-          if ($currentBaseCount -gt 3) {
-            $deleteCount = $currentBaseCount - 3
-            get-childitem "\\cloud.gerega.net\Images\bases" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
-          }
-        displayName: Cleanup Old Images
+      # - pwsh: |
+      #     Remove-Item -Recurse -Force "$(Build.StagingDirectory)\bases\"
+      #     Remove-Item -Recurse -Force "$(Build.SourcesDirectory)\provisioning\packer_cache"
+      #   displayName: Cleanup Build Agent
+      # - pwsh: |
+      #     $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
+      #     if ($currentBaseCount -gt 3) {
+      #       $deleteCount = $currentBaseCount - 3
+      #       get-childitem "\\cloud.gerega.net\Images\bases" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
+      #     }
+      #   displayName: Cleanup Old Images
