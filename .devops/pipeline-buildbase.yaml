@@ -15,6 +15,10 @@ schedules:
       include:
         - main
 
+variables:
+- name: ubuntu_version
+  value: 2204
+
 jobs:
   - job: build_base
     displayName: Build Base Image
@@ -40,7 +44,10 @@ jobs:
 
           Write-Host "Build Base Image"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          Build-UbuntuBase -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-2204-base"
+          $templateFile = ".\templates\ubuntu-base\ubuntu-$(ubuntu_version)-base.pkr.hcl"
+          $hostHttpFolder = ".\templates\ubuntu-base\http"
+
+          Build-Ubuntu -TemplateFile "$templateFile" -hostHttpFolder "$hostHttpFolder" -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-$(ubuntu_version)-base" -useUnifi $false
 
           New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(Build.BuildNumber)"
 
@@ -50,8 +57,12 @@ jobs:
         inputs:
           SourceFolder: $(Build.StagingDirectory)\bases\
           Contents: "**"
-          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\ubuntu-$(Build.BuildNumber)"
+          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\$(ubuntu_version)\\ubuntu-$(Build.BuildNumber)"
           OverWrite: true
+      - pwsh: |
+          Remove-Item -Recurse -Force "$(Build.StagingDirectory)\bases\"
+          Remove-Item -Recurse -Force "$(Build.SourcesDirectory)\provisioning\packer_cache"
+        displayName: Cleanup Build Agent
       - pwsh: |
           $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases" | Measure-Object).Count 
           if ($currentBaseCount -gt 3) {
