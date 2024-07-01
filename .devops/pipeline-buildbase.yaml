@@ -15,9 +15,13 @@ schedules:
       include:
         - main
 
-variables:
+parameters:
 - name: ubuntu_version
-  value: 2204
+  type: string
+  default: '2204'
+  values:
+  - '2204'
+  - '2404'
 
 jobs:
   - job: build_base
@@ -44,10 +48,10 @@ jobs:
 
           Write-Host "Build Base Image"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          $templateFile = ".\templates\ubuntu-base\ubuntu-$(ubuntu_version)-base.pkr.hcl"
+          $templateFile = ".\templates\ubuntu-base\ubuntu-${{ parameters.ubuntu_version }}-base.pkr.hcl"
           $hostHttpFolder = ".\templates\ubuntu-base\http"
 
-          Build-Ubuntu -TemplateFile "$templateFile" -hostHttpFolder "$hostHttpFolder" -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-$(ubuntu_version)-base" -useUnifi $false
+          Build-Ubuntu -TemplateFile "$templateFile" -hostHttpFolder "$hostHttpFolder" -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-${{ parameters.ubuntu_version }}-base" -useUnifi $false
 
           New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\ubuntu-$(Build.BuildNumber)"
 
@@ -57,7 +61,7 @@ jobs:
         inputs:
           SourceFolder: $(Build.StagingDirectory)\bases\
           Contents: "**"
-          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\$(ubuntu_version)\\ubuntu-$(Build.BuildNumber)"
+          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\${{ parameters.ubuntu_version }}\\ubuntu-$(Build.BuildNumber)"
           OverWrite: true
       - pwsh: |
           Remove-Item -Recurse -Force "$(Build.StagingDirectory)\bases\"
