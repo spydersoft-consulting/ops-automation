@@ -7,13 +7,6 @@ resources:
 
 trigger: none
 pr: none
-schedules:
-  - cron: "0 4 * * 6"
-    always: true
-    displayName: "Weekly Base Build"
-    branches:
-      include:
-        - main
 
 parameters:
 - name: ubuntu_version
