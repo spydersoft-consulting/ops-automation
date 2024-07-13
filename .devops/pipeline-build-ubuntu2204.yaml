@@ -1,0 +1,13 @@
+schedules:
+  - cron: "0 4 * * 6"
+    always: true
+    displayName: "Weekly Base Build - Ubuntu 22.04"
+    branches:
+      include:
+        - main
+
+
+extends:
+  template: pipeline-buildbase.yaml
+  parameters:
+    ubuntu_version: '2204'
