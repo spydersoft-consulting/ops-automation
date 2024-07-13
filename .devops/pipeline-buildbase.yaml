@@ -5,9 +5,6 @@ resources:
       endpoint: "Github"
       name: spyder007/provisioning-projects
 
-trigger: none
-pr: none
-
 parameters:
 - name: ubuntu_version
   type: string
