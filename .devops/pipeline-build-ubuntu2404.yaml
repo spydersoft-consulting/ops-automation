@@ -6,6 +6,8 @@ schedules:
       include:
         - main
 
+pr: none
+trigger: none
 
 extends:
   template: pipeline-buildbase.yaml
