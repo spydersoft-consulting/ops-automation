@@ -10,6 +10,6 @@ pr: none
 trigger: none
 
 extends:
-  template: pipeline-buildbase.yaml
+  template: template-buildbase.yaml
   parameters:
     ubuntu_version: '2204'
