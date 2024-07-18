@@ -1,0 +1,66 @@
+resources:
+  repositories:
+    - repository: provisioning
+      type: github
+      endpoint: "Github"
+      name: spyder007/provisioning-projects
+
+parameters:
+- name: ubuntu_version
+  type: string
+  default: '2204'
+  values:
+  - '2204'
+  - '2404'
+
+jobs:
+  - job: build_base
+    displayName: Build Base Image
+    timeoutInMinutes: 60
+    pool:
+      name: Provisioning
+    steps:
+      - checkout: self
+        path: s/automation
+      - checkout: provisioning
+        path: s/provisioning
+      - task: DownloadSecureFile@1
+        name: secretvars
+        inputs:
+          secureFile: ubuntu-base-secrets.pkrvars.hcl
+      - pwsh: |
+          $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+          $regexAddPath = [regex]::Escape($addPath)
+          $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+          $env:Path = ($arrPath + $addPath) -join ';'
+          Write-Host "Import provisioning modules"
+          Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+          Write-Host "Build Base Image"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
+          $templateFile = ".\templates\ubuntu-base\ubuntu-${{ parameters.ubuntu_version }}-base.pkr.hcl"
+          $hostHttpFolder = ".\templates\ubuntu-base\http"
+
+          Build-Ubuntu -TemplateFile "$templateFile" -hostHttpFolder "$hostHttpFolder" -SecretVariableFile $(secretvars.secureFilePath) -OutputFolder "$(Build.StagingDirectory)\bases\" -machineName "ubuntu-${{ parameters.ubuntu_version }}-base" -useUnifi $false
+
+          New-Item -ItemType Directory "\\cloud.gerega.net\Images\bases\${{ parameters.ubuntu_version }}\ubuntu-$(Build.BuildNumber)"
+
+        displayName: Build Ubuntu Base Image
+      - task: CopyFiles@2
+        displayName: Copy Files to Synology
+        inputs:
+          SourceFolder: $(Build.StagingDirectory)\bases\
+          Contents: "**"
+          TargetFolder: "\\\\cloud.gerega.net\\Images\\bases\\${{ parameters.ubuntu_version }}\\ubuntu-$(Build.BuildNumber)"
+          OverWrite: true
+      - pwsh: |
+          Remove-Item -Recurse -Force "$(Build.StagingDirectory)\bases\"
+          Remove-Item -Recurse -Force "$(Build.SourcesDirectory)\provisioning\packer_cache"
+        displayName: Cleanup Build Agent
+      - pwsh: |
+          $currentBaseCount = (get-childitem "\\cloud.gerega.net\Images\bases\${{ parameters.ubuntu_version }}" | Measure-Object).Count 
+          if ($currentBaseCount -gt 3) {
+            $deleteCount = $currentBaseCount - 3
+            get-childitem "\\cloud.gerega.net\Images\bases\${{ parameters.ubuntu_version }}" | Sort-Object -Descending | Select-Object -last $deleteCount | Remove-Item -Recurse
+          }
+        displayName: Cleanup Old Images
