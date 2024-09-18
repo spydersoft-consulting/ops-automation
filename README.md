@@ -1,6 +1,6 @@
 # Automation Tools #
 
-This repository contains tools and scripts used for automated management of resources within the home lab.
+This repository contains tools and scripts used for automated management of resources within my home lab.
 
 ## What's Inside? ##
 
