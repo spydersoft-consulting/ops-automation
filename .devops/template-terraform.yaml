@@ -80,10 +80,10 @@ stages:
 
           - publish: $(Build.ArtifactStagingDirectory)
             artifact: ${{ parameters.artifactName}}
-            displayName: "Publish Terraform Plan"      
+            displayName: "Publish Tofu Plan"      
 
-  - stage: applyTerraformAuto
-    displayName: "Apply Terraform - Auto"
+  - stage: applyTofuAuto
+    displayName: "Apply Tofu - Auto"
     dependsOn: planTofu
     condition: and
         (
@@ -97,8 +97,8 @@ stages:
           )
         )
     jobs:
-      - job: applyTerraform
-        displayName: Apply Terraform
+      - job: applyTofu
+        displayName: Apply Tofu
         pool:
           name: Default
         steps:
@@ -134,8 +134,8 @@ stages:
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
 
-  - stage: applyTerraformManual
-    displayName: "Apply Terraform - Manual"
+  - stage: applyTofuManual
+    displayName: "Apply Tofu - Manual"
     dependsOn: planTofu
     condition: and
         (
@@ -160,9 +160,9 @@ stages:
               notifyUsers: ""
               instructions: "There are resources being destroyed or the costs are increasing alot as part of this deployment, please review the output of Terraform plan before approving."
               onTimeout: "reject"
-      - job: applyTerraform
+      - job: applyTofu
         dependsOn: "waitForValidation"
-        displayName: Apply Terraform
+        displayName: Apply Tofu
         pool:
           name: Default
         steps:
