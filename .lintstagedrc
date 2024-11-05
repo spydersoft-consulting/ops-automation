@@ -1,0 +1,4 @@
+{
+	"*.md": "prettier",
+    "*.{tf,tfvars,tftest.hcl}": "tofu fmt"
+}
