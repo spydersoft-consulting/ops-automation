@@ -46,7 +46,7 @@ resource "time_rotating" "minio" {
 }
 
 resource "azuread_service_principal_password" "minio" {
-  service_principal_id = azuread_service_principal.minio.object_id
+  service_principal_id = azuread_service_principal.minio.id
   rotate_when_changed = {
     rotation = time_rotating.minio.id
   }

@@ -65,7 +65,7 @@ resource "time_rotating" "argocd" {
 }
 
 resource "azuread_service_principal_password" "argocd" {
-  service_principal_id = azuread_service_principal.argocd.object_id
+  service_principal_id = azuread_service_principal.argocd.id
   rotate_when_changed = {
     rotation = time_rotating.argocd.id
   }

@@ -53,7 +53,7 @@ resource "time_rotating" "hcvault" {
 }
 
 resource "azuread_service_principal_password" "hcvault" {
-  service_principal_id = azuread_service_principal.hcvault.object_id
+  service_principal_id = azuread_service_principal.hcvault.id
   rotate_when_changed = {
     rotation = time_rotating.hcvault.id
   }
