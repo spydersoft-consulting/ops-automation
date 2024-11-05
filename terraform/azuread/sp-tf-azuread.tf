@@ -21,7 +21,7 @@ resource "time_rotating" "tf-azuread" {
 }
 
 resource "azuread_service_principal_password" "tf-azuread" {
-  service_principal_id = azuread_service_principal.tf-azuread.object_id
+  service_principal_id = azuread_service_principal.tf-azuread.id
   rotate_when_changed = {
     rotation = time_rotating.tf-azuread.id
   }

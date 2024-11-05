@@ -16,8 +16,8 @@ provider "azurerm" {
       recover_soft_deleted_key_vaults = true
     }
   }
-  skip_provider_registration = true
-  subscription_id            = var.subscription_id
+  resource_provider_registrations = "none"
+  subscription_id                 = var.subscription_id
 }
 
 provider "azuread" {

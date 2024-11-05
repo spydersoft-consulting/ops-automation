@@ -37,6 +37,6 @@ variables:
 extends:
   template: template-terraform.yaml
   parameters:
-    terraformDirectory: "terraform/devops"
+    tofuDirectory: "terraform/devops"
     addVaultAuthentication: true
     planArguments: "-var-file config/gerega.tfvars"

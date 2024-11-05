@@ -28,7 +28,7 @@ resource "azuredevops_build_definition" "build-ubuntu-base-2204" {
 resource "azuredevops_build_definition" "build-ubuntu-base-2404" {
   project_id = azuredevops_project.ops.id
   name       = "Build Ubuntu Base Image - 24.04"
-  path       =  "\\Base Images"
+  path       = "\\Base Images"
 
   ci_trigger {
     use_yaml = true

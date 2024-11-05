@@ -1,5 +1,5 @@
 parameters:
-  - name: terraformDirectory
+  - name: tofuDirectory
     type: string
   - name: planArguments
     type: string
@@ -13,18 +13,18 @@ parameters:
 
 
 stages:
-  - stage: planTerraform
-    displayName: "Plan Terraform"
+  - stage: planTofu
+    displayName: "Plan Tofu"
     jobs:
-      - job: planTerraform
-        displayName: Terraform
+      - job: planTofu
+        displayName: Tofu
         pool:
           name: Default
         steps:
           - pwsh: |
-              terraform init
+              tofu init
             displayName: "Initialize"
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
@@ -37,10 +37,10 @@ stages:
           - pwsh: |
               $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
               if ($addVaultAuthentication) {
-                terraform plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan -detailed-exitcode
+                tofu plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan -detailed-exitcode
               }
               else {
-                terraform plan ${{ parameters.planArguments }} -out tf.plan -detailed-exitcode
+                tofu plan ${{ parameters.planArguments }} -out tf.plan -detailed-exitcode
               }
 
               $exitCode = $LASTEXITCODE
@@ -49,7 +49,7 @@ stages:
               if ($exitCode -eq 2) {
                 Write-Host "Changes detected"
                 $changes = true;
-                terraform show -json tf.plan > plan.json
+                tofu show -json tf.plan > plan.json
                 $plan = get-content -raw plan.json | convertfrom-json
                 $hasDestructiveChanges = ($plan.resource_changes | ? { $_.change.actions -contains "delete" } | Measure).Count -gt 0
                 
@@ -63,11 +63,11 @@ stages:
                 }
               }                          
 
-              terraform show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
+              tofu show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
               Copy-Item tf.plan $(Build.ArtifactStagingDirectory)/tf.plan
             displayName: "Plan"
-            name: terraformPlan
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            name: tofuPlan
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
@@ -84,12 +84,12 @@ stages:
 
   - stage: applyTerraformAuto
     displayName: "Apply Terraform - Auto"
-    dependsOn: planTerraform
+    dependsOn: planTofu
     condition: and
         (
           succeeded(),
           and (
-            eq(dependencies.planTerraform.outputs['planTerraform.terraformPlan.HAS_CHANGES_ONLY'], 'true'),
+            eq(dependencies.planTofu.outputs['planTofu.tofuPlan.HAS_CHANGES_ONLY'], 'true'),
             and(
               eq(variables['Build.SourceBranchName'], 'main'),
               ne(variables['Build.Reason'], 'PullRequest')
@@ -108,9 +108,9 @@ stages:
               artifactName: "${{ parameters.artifactName }}"
               targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
           - pwsh: |
-              terraform init
+              tofu init
             displayName: "Initialize"
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
@@ -121,9 +121,9 @@ stages:
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
           - pwsh: |
-              terraform apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
+              tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
@@ -136,12 +136,12 @@ stages:
 
   - stage: applyTerraformManual
     displayName: "Apply Terraform - Manual"
-    dependsOn: planTerraform
+    dependsOn: planTofu
     condition: and
         (
           succeeded(),
           and (
-            eq(dependencies.planTerraform.outputs['planTerraform.terraformPlan.HAS_DESTROY_CHANGES'], 'true'),
+            eq(dependencies.planTofu.outputs['planTofu.tofuPlan.HAS_DESTROY_CHANGES'], 'true'),
             and(
               eq(variables['Build.SourceBranchName'], 'main'),
               ne(variables['Build.Reason'], 'PullRequest')
@@ -172,9 +172,9 @@ stages:
               artifactName: "${{ parameters.artifactName }}"
               targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
           - pwsh: |
-              terraform init
+              tofu init
             displayName: "Initialize"
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
@@ -185,9 +185,9 @@ stages:
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
           - pwsh: |
-              terraform apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
+              tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
-            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.terraformDirectory }}
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
               AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
               AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)

@@ -14,7 +14,7 @@ resource "time_rotating" "tf-gerega-lab" {
 }
 
 resource "azuread_service_principal_password" "tf-gerega-lab" {
-  service_principal_id = azuread_service_principal.tf-gerega-lab.object_id
+  service_principal_id = azuread_service_principal.tf-gerega-lab.id
   rotate_when_changed = {
     rotation = time_rotating.tf-gerega-lab.id
   }

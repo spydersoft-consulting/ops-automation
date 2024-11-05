@@ -55,7 +55,7 @@ resource "time_rotating" "grafana" {
 }
 
 resource "azuread_service_principal_password" "grafana" {
-  service_principal_id = azuread_service_principal.grafana.object_id
+  service_principal_id = azuread_service_principal.grafana.id
   rotate_when_changed = {
     rotation = time_rotating.grafana.id
   }
