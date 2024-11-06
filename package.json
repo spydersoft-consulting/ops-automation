@@ -1,0 +1,14 @@
+{
+  "name": "ops-automation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:spydersoft-consulting/ops-automation",
+  "author": "Matt Gerega <gerega@gmail.com>",
+  "license": "MIT",
+  "packageManager": "yarn@4.5.1",
+  "dependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3"
+  }
+}
