@@ -32,10 +32,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -78,10 +78,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -123,10 +123,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -138,10 +138,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -191,10 +191,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -206,10 +206,10 @@ stages:
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
-              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
                 AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
                 AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              $else:
+              ${{ else }}:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
