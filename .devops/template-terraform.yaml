@@ -10,6 +10,9 @@ parameters:
   - name: artifactName
     type: string
     default: "terraform-plan"
+  - name: includeAzureDevopsVariables
+    type: boolean
+    default: false
 
 
 stages:
@@ -26,14 +29,17 @@ stages:
             displayName: "Initialize"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+              
           - pwsh: |
               $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
               if ($addVaultAuthentication) {
@@ -69,14 +75,16 @@ stages:
             name: tofuPlan
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
 
           - publish: $(Build.ArtifactStagingDirectory)
             artifact: ${{ parameters.artifactName}}
@@ -112,27 +120,31 @@ stages:
             displayName: "Initialize"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
           - pwsh: |
               tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
 
   - stage: applyTofuManual
     displayName: "Apply Tofu - Manual"
@@ -176,24 +188,28 @@ stages:
             displayName: "Initialize"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
           - pwsh: |
               tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}/tf.plan
             displayName: "Apply"
             workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
             env:
-              AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
-              AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
               AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
               AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              $if {{ eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              $else:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
