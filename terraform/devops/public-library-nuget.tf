@@ -1,6 +1,6 @@
 
 resource "azuredevops_variable_group" "nuget-spydersoft-develop" {
-  project_id   = azuredevops_project.ops.id
+  project_id   = azuredevops_project.public.id
   name         = "nuget-spydersoft-develop"
   description  = "[terraform-managed] Spydersoft Develop Nuget Credentials"
   allow_access = false
