@@ -36,8 +36,6 @@ resource "azuredevops_serviceendpoint_nuget" "spydersoft-develop" {
   description           = "Managed by Terraform"
 }
 
-
-
 resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
   project_id            = azuredevops_project.public.id
   docker_registry       = "https://proget.mattgerega.com"
