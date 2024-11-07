@@ -36,6 +36,15 @@ resource "azuredevops_serviceendpoint_nuget" "spydersoft-develop" {
   description           = "Managed by Terraform"
 }
 
+resource "azuredevops_serviceendpoint_nuget" "spydersoft-develop-push" {
+  project_id            = azuredevops_project.public.id
+  feed_url              = "https://proget.mattgerega.com/nuget/develop/v3/index.json"
+  api_key               = data.vault_kv_secret_v2.proget-nuget.data["pushApiKey"]
+  service_endpoint_name = "SpydersoftDevelopPush"
+  description           = "Managed by Terraform"
+}
+
+
 resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
   project_id            = azuredevops_project.public.id
   docker_registry       = "https://proget.mattgerega.com"
