@@ -1,6 +1,6 @@
 resource "azuredevops_build_definition" "spydersoft-core-hosting" {
   project_id = azuredevops_project.public.id
-  name       = "spydersoft-core-hosting"
+  name       = "spydersoft-platform"
   path       = "\\Libraries"
 
   ci_trigger {
@@ -20,7 +20,7 @@ resource "azuredevops_build_definition" "spydersoft-core-hosting" {
     branch_name           = "refs/heads/main"
     service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
     repo_type             = "GitHub"
-    repo_id               = "spydersoft-consulting/core-hosting"
+    repo_id               = "spydersoft-consulting/platform"
     yml_path              = ".devops/pipeline-main.yml"
   }
 }
