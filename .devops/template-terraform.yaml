@@ -67,6 +67,10 @@ stages:
                   echo "##vso[task.logissue type=warning]Changes with no destroys detected, it is safe for the pipeline to proceed automatically"
                   Write-Host "##vso[task.setvariable variable=HAS_CHANGES_ONLY;isOutput=true]true"
                 }
+              }
+              elseif ($exitCode -eq 1) {
+                Write-Host "Errors during terraform."
+                exit 1
               }                          
 
               tofu show tf.plan -no-color > $(Build.ArtifactStagingDirectory)/terraform-plan.txt
