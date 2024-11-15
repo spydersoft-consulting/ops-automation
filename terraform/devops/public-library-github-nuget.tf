@@ -12,7 +12,7 @@ resource "azuredevops_variable_group" "nuget-spydersoft-github" {
 
   variable {
     name         = "nuget-feed-api-key"
-    secret_value = data.vault_kv_secret_v2.github-nuget.data["pushApiKey"]
+    secret_value = data.vault_kv_secret_v2.github-nuget.data["token"]
     is_secret    = true
   }
 }
