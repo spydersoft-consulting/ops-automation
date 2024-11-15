@@ -54,3 +54,13 @@ resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
   description           = "Managed by Terraform"
   registry_type         = "Others"
 }
+
+resource "azuredevops_serviceendpoint_dockerregistry" "public-github-spydersoft-docker" {
+  project_id            = azuredevops_project.public.id
+  docker_registry       = "https://ghcr.io"
+  docker_username       = data.vault_kv_secret_v2.github-nuget.data["username"]
+  docker_password       = data.vault_kv_secret_v2.github-nuget.data["token"]
+  service_endpoint_name = "github-spydersoft-docker"
+  description           = "Managed by Terraform"
+  registry_type         = "Others"
+}

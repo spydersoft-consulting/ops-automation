@@ -53,4 +53,4 @@ Thumbs.db
 terraform/**/tf.plan
 **/.vscode/*
 **/plan.json
-**/.env
+**/.env.*
