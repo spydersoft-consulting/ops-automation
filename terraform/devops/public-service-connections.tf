@@ -36,6 +36,15 @@ resource "azuredevops_serviceendpoint_nuget" "spydersoft-develop" {
   description           = "Managed by Terraform"
 }
 
+resource "azuredevops_serviceendpoint_nuget" "spydersoft-github" {
+  project_id            = azuredevops_project.public.id
+  feed_url              = data.vault_kv_secret_v2.github-nuget.data["feed_url"]
+  username              = data.vault_kv_secret_v2.github-nuget.data["username"]
+  password              = data.vault_kv_secret_v2.github-nuget.data["token"]
+  service_endpoint_name = "SpydersoftGithub"
+  description           = "Managed by Terraform"
+}
+
 resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
   project_id            = azuredevops_project.public.id
   docker_registry       = "https://proget.mattgerega.com"

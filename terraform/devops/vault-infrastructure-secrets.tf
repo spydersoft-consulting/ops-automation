@@ -26,6 +26,11 @@ data "vault_kv_secret_v2" "spydersoft-gh-token" {
   name  = "github/spydersoft-ado"
 }
 
+data "vault_kv_secret_v2" "github-nuget" {
+  mount = "secrets-infra"
+  name  = "github/nuget"
+}
+
 data "vault_kv_secret_v2" "sonarqube-ado-public-projects" {
   mount = "secrets-infra"
   name  = "sonarqube/ado-public-projects"
