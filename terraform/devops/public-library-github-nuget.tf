@@ -1,5 +1,5 @@
 
-resource "azuredevops_variable_group" "nuget-spydersoft-develop" {
+resource "azuredevops_variable_group" "nuget-spydersoft-github" {
   project_id   = azuredevops_project.public.id
   name         = "nuget-spydersoft-github"
   description  = "[terraform-managed] Spydersoft Develop Nuget Credentials"
