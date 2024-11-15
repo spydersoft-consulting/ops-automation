@@ -7,7 +7,7 @@ resource "azuredevops_variable_group" "nuget-spydersoft-github" {
 
   variable {
     name  = "nuget-feed-url"
-    value = data.vault_kv_secret_v2.github-nuget.data["feedUrl"]
+    value = data.vault_kv_secret_v2.github-nuget.data["feed_url"]
   }
 
   variable {
