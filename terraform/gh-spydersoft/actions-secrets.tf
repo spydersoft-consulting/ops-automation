@@ -4,7 +4,7 @@ resource "github_actions_secret" "windows_dns_api_user" {
   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["user"]
 }
 
-resource "github_actions_secret" "windows_dns_api_user" {
+resource "github_actions_secret" "windows_dns_api_token" {
   repository      = "windows-dns-api"
   secret_name     = "RESOURCE_TOKEN"
   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["token"]
