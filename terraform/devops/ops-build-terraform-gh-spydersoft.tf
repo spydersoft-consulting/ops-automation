@@ -1,6 +1,6 @@
-resource "azuredevops_build_definition" "tf-azuread" {
+resource "azuredevops_build_definition" "tf-gh-spydersoft" {
   project_id = azuredevops_project.ops.id
-  name       = "terraform-azuread"
+  name       = "terraform-gh-spydersoft"
   path       = "\\Terraform"
 
   ci_trigger {
@@ -21,6 +21,6 @@ resource "azuredevops_build_definition" "tf-azuread" {
     service_connection_id = azuredevops_serviceendpoint_github.spydersoft-consulting.id
     repo_type             = "GitHub"
     repo_id               = "spydersoft-consulting/ops-automation"
-    yml_path              = ".devops/pipeline-tf-azuread.yaml"
+    yml_path              = ".devops/pipeline-tf-gh-spydersoft.yaml"
   }
 }
