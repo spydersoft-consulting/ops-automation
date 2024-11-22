@@ -55,7 +55,7 @@ stages:
               if ($addGithubToken) {
                 $additionalArgs += " -var github_token=$GITHUB_TOKEN"
               }
-              
+              Write-Host "Args = $additionalArgs"
               tofu plan ${{ parameters.planArguments }} "$additionalArgs" -out tf.plan -detailed-exitcode
               $exitCode = $LASTEXITCODE
 
