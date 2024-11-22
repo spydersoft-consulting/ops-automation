@@ -31,6 +31,11 @@ data "vault_kv_secret_v2" "github-nuget" {
   name  = "github/nuget"
 }
 
+data "vault_kv_secret_v2" "github-terraform" {
+  mount = "secrets-infra"
+  name  = "github/terraform"
+}
+
 data "vault_kv_secret_v2" "sonarqube-ado-public-projects" {
   mount = "secrets-infra"
   name  = "sonarqube/ado-public-projects"

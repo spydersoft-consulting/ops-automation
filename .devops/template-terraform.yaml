@@ -7,6 +7,9 @@ parameters:
   - name: addVaultAuthentication
     type: boolean
     default: false
+  - name: addGithubToken
+    type: boolean
+    default: false
   - name: artifactName
     type: string
     default: "terraform-plan"
@@ -41,14 +44,19 @@ stages:
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
               
           - pwsh: |
+
+              $additionalArgs = "";
               $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
+              $addGithubToken = [bool]"${{ parameters.addGithubToken }}"
               if ($addVaultAuthentication) {
-                tofu plan ${{ parameters.planArguments }} -var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id) -out tf.plan -detailed-exitcode
-              }
-              else {
-                tofu plan ${{ parameters.planArguments }} -out tf.plan -detailed-exitcode
+                $additionalArgs = "-var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id)"  
               }
 
+              if {
+                $additionalArgs += " -var github_token=$GITHUB_TOKEN"
+              }
+              
+              tofu plan ${{ parameters.planArguments }} "$additionalArgs" -out tf.plan -detailed-exitcode
               $exitCode = $LASTEXITCODE
 
               $changes = false;
