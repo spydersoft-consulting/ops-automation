@@ -52,9 +52,10 @@ stages:
                 $additionalArgs = "-var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id)"  
               }
 
-              if ($addGithubToken) {
-                $additionalArgs += " -var github_token=$GITHUB_TOKEN"
-              }
+              #if ($addGithubToken) {
+              #  $additionalArgs += " -var github_token=$GITHUB_TOKEN"
+              #}
+
               Write-Host "Args = $additionalArgs"
               tofu plan ${{ parameters.planArguments }} "$additionalArgs" -out tf.plan -detailed-exitcode
               $exitCode = $LASTEXITCODE
