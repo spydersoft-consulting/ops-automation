@@ -57,8 +57,10 @@ stages:
               #}
 
               Write-Host "Args = $additionalArgs"
-              tofu plan ${{ parameters.planArguments }} "$additionalArgs" -out tf.plan -detailed-exitcode
+              Invoke-Expression "tofu plan ${{ parameters.planArguments }} $additionalArgs -out tf.plan -detailed-exitcode"
               $exitCode = $LASTEXITCODE
+
+              Write-Host "Tofu Exit Code = $exitCode"
 
               $changes = false;
               if ($exitCode -eq 2) {
