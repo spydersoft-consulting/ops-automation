@@ -52,7 +52,7 @@ stages:
                 $additionalArgs = "-var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id)"  
               }
 
-              if {
+              if ($addGithubToken) {
                 $additionalArgs += " -var github_token=$GITHUB_TOKEN"
               }
               
