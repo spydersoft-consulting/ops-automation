@@ -1,0 +1,38 @@
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily 2 AM build
+    branches:
+      include:
+        - main
+    always: true
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - terraform/gh-spydersoft/*
+      - .devops/pipeline-gh-spydersoft.yaml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - terraform/gh-spydersoft/*
+      - .devops/pipeline-gh-spydersoft.yaml
+
+variables:
+  - group: "terraform-gh-spydersoft"
+  - group: "terraform-s3-backend"
+  - group: "terraform-hcvault"
+
+extends:
+  template: template-terraform.yaml
+  parameters:
+    tofuDirectory: "terraform/gh-spydersoft"
+    addVaultAuthentication: true
+    addGithubToken: true
