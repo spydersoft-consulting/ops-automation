@@ -46,8 +46,8 @@ stages:
           - pwsh: |
 
               $additionalArgs = "";
-              $addVaultAuthentication = [bool]"${{ parameters.addVaultAuthentication }}"
-              $addGithubToken = [bool]"${{ parameters.addGithubToken }}"
+              $addVaultAuthentication = [System.Boolean]::Parse("${{ parameters.addVaultAuthentication }}")
+              $addGithubToken = [System.Boolean]::Parse("${{ parameters.addGithubToken }}")
               if ($addVaultAuthentication) {
                 $additionalArgs = "-var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id)"  
               }
