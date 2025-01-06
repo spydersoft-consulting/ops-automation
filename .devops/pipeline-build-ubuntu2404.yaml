@@ -1,5 +1,5 @@
 schedules:
-  - cron: "0 10 * * 6"
+  - cron: "0 12 * * 6"
     always: true
     displayName: "Weekly Base Build - Ubuntu 24.04"
     branches:
