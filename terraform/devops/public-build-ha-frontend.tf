@@ -1,4 +1,4 @@
-resource "azuredevops_build_definition" "techradar-frontend" {
+resource "azuredevops_build_definition" "ha-frontend" {
   project_id = azuredevops_project.public.id
   name       = "ha-frontend"
   path       = "\\Home Automation"
