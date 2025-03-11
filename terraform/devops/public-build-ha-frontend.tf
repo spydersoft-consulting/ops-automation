@@ -1,6 +1,6 @@
-resource "azuredevops_build_definition" "unifi-ipmanager-api" {
+resource "azuredevops_build_definition" "techradar-frontend" {
   project_id = azuredevops_project.public.id
-  name       = "unifi-ipmanager-build"
+  name       = "ha-frontend"
   path       = "\\Home Automation"
 
   ci_trigger {
@@ -18,9 +18,9 @@ resource "azuredevops_build_definition" "unifi-ipmanager-api" {
 
   repository {
     branch_name           = "refs/heads/main"
-    service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
+    service_connection_id = azuredevops_serviceendpoint_github.spydersoft-consulting-app-auth.id # Github App Connection
     repo_type             = "GitHub"
-    repo_id               = "spyder007/unifi-ipmanager"
+    repo_id               = "spyder007/ha-frontend"
     yml_path              = ".devops/pipeline-ci.yml"
   }
 }
