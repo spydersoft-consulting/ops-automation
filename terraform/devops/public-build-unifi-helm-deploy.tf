@@ -1,7 +1,7 @@
 resource "azuredevops_build_definition" "unifi-helm-deploy" {
   project_id = azuredevops_project.public.id
   name       = "unifi-helm-deploy"
-  path       = "\\Unifi"
+  path       = "\\Home Automation"
 
   ci_trigger {
     use_yaml = true

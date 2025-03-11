@@ -1,7 +1,7 @@
 resource "azuredevops_build_definition" "unifi-client" {
   project_id = azuredevops_project.public.id
   name       = "Unifi Client Build"
-  path       = "\\Unifi"
+  path       = "\\Home Automation"
 
   ci_trigger {
     use_yaml = true
