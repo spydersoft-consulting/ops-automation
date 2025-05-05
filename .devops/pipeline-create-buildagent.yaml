@@ -65,7 +65,7 @@ jobs:
 
           $agent_release = (Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/azure-pipelines-agent/releases) | Where-Object { ($_.tag_name -like "v4.*" -and -not $_.draft -and -not $_.prerelease) } | select-object -First 1
           $agent_version = $agent_release.tag_name.Replace("v", "")
-          "ms_agent_url = `"https://vstsagentpackage.azureedge.net/agent/$($agent_version)`"" | Add-Content $secretPath
+          "ms_agent_url = `"https://download.agent.dev.azure.com/agent/$($agent_version)`"" | Add-Content $secretPath
           "ms_agent_filename = `"vsts-agent-linux-x64-$($agent_version).tar.gz`"" | Add-Content $secretPath
 
           Write-Host "Configure Unifi Client Settings"
