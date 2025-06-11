@@ -37,7 +37,8 @@ jobs:
       #   displayName: "Update Submodules"
       - pwsh: |
           Install-Module powershell-yaml -Force
-
+          Install-Module -Name Corsinvest.ProxmoxVE.Api -Force
+          
           $addPath = "C:\Program Files\OpenSSL-Win64\bin"
           $regexAddPath = [regex]::Escape($addPath)
           $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
