@@ -73,3 +73,8 @@ data "vault_kv_secret_v2" "authorized-keys" {
   mount = "secrets-infra"
   name  = "access/authorized_keys"
 }
+
+data "vault_kv_secret_v2" "proxmox-settings" {
+  mount = "secrets-infra"
+  name  = "proxmox/agent"
+}
