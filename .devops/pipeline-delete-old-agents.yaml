@@ -24,7 +24,7 @@ jobs:
     displayName: Cleanup Build Agents
     timeoutInMinutes: 560
     pool:
-      name: Provisioning
+      name: Default
     steps:
       - checkout: self
         path: s/automation
