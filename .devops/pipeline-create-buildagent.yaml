@@ -1,12 +1,12 @@
 trigger: none
 pr: none
-# schedules:
-#   - cron: "0 4 * * 0"
-#     displayName: "Build Agent Creation"
-#     always: true
-#     branches:
-#       include:
-#         - main
+schedules:
+  - cron: "0 4 15 * *"
+    displayName: "Build Agent Creation"
+    always: true
+    branches:
+      include:
+        - main
 
 resources:
   repositories:
@@ -53,13 +53,9 @@ jobs:
 
           Write-Host "Write all variables to file"
           $secretPath = "$(Build.SourcesDirectory)/provisioning/templates/buildagents/secrets.pkrvars.hcl"
-          "cpus = 4" | Add-Content $secretPath
-          "memory = 8192" | Add-Content $secretPath
-          "disk_size = 128000" | Add-Content $secretPath
-          "files_dirs = [`"./templates/buildagents/files/`"]" | Add-Content $secretPath
-          "ms_agent_pool = `"Default`"" | Add-Content $secretPath
-          "username = `"$(agent-username)`"" | Add-Content $secretPath
-          "password = `"$(agent-password)`"" | Add-Content $secretPath
+
+          "ssh_username = `"$(agent-username)`"" | Add-Content $secretPath
+          "ssh_password = `"$(agent-password)`"" | Add-Content $secretPath
           "ms_agent_org_url = `"https://dev.azure.com/$(agent-org)`"" | Add-Content $secretPath
           "ms_agent_pat = `"$(agent-pat)`"" | Add-Content $secretPath
 
@@ -77,7 +73,7 @@ jobs:
 
           Write-Host "Create Build Agent"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          .\Create-NewBuildAgent.ps1 -type ubuntu-2404 -OutputFolder "D:\\Hyper-V\\" -secretVariableFile "$secretPath"
+          .\Create-NewPxBuildAgent.ps1 -secretVariableFile "$secretPath"
 
         displayName: Create New Build Agent
         name: create_agent
