@@ -1,4 +1,4 @@
-resource "azuredevops_build_definition" "cleanup-devops-agent" {
+resource "azuredevops_build_definition" "disable-devops-agent" {
   project_id = azuredevops_project.ops.id
   name       = "Disable Old Devops Agents"
   path       = "\\"
