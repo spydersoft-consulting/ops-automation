@@ -21,6 +21,30 @@ variables:
   - group: proxmox-settings
 
 jobs:
+  - job: disable_build_agents
+    displayName: Disable Build Agents
+    timeoutInMinutes: 560
+    pool:
+      name: Default
+    steps:
+      - checkout: self
+        path: s/automation
+      - checkout: provisioning
+        path: s/provisioning
+      - pwsh: |
+          Write-Host "Import provisioning modules"
+          Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+          Write-Host "Set Proxmox Settings"
+          Set-ProxmoxSettings -hostsAndPorts $(proxmox-host) -apiToken $(proxmox-api-token)
+
+          Write-Host "Disable Old Build Agents"
+          Push-Location "$(Build.SourcesDirectory)\provisioning"
+          .\Disable-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default"
+
+        displayName: Disable Old Build Agents
+        name: disable_old_build_agents
+        
   - job: cleanup_build_agents
     displayName: Cleanup Build Agents
     timeoutInMinutes: 560
