@@ -51,6 +51,7 @@ jobs:
 
   - job: cleanup_build_agents
     displayName: Cleanup Build Agents
+    dependsOn: disable_build_agents
     timeoutInMinutes: 560
     pool:
       name: Default
