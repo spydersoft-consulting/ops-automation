@@ -1,8 +1,8 @@
 trigger: none
 pr: none
 schedules:
-  - cron: "0 5 16 * *"
-    displayName: "Cleanup Agents"
+  - cron: "0 4 16 * *"
+    displayName: "Disable Old Build Agents"
     always: true
     branches:
       include:
@@ -35,19 +35,12 @@ jobs:
           Write-Host "Import provisioning modules"
           Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
 
-          Write-Host "Configure Unifi Client Settings"
-          Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
-          Set-UnifiEnvironmentVariables -provisionUrl $(unifi-wrapper-url) -provisionGroup $(unifi-provisioning-group)
-
-          Write-Host (Get-AuthApiEnvironmentVariables | ConvertTo-Json)
-          Write-Host (Get-UnifiEnvironmentVariables | ConvertTo-Json)
-
           Write-Host "Set Proxmox Settings"
           Set-ProxmoxSettings -hostsAndPorts $(proxmox-host) -apiToken $(proxmox-api-token)
 
-          Write-Host "Cleanup Old Build Agents"
+          Write-Host "Disable Old Build Agents"
           Push-Location "$(Build.SourcesDirectory)\provisioning"
-          .\Delete-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default"
+          .\Disable-OldBuildAgents.ps1 -devOpsOrg "$(agent-org)" -devOpsUsername "$(devops-username)" -devOpsPat "$(agent-pat)" -devOpsPool "Default"
 
-        displayName: Cleanup Old Build Agents
-        name: cleanup_build_agents
+        displayName: Disable Old Build Agents
+        name: disable_old_build_agents
