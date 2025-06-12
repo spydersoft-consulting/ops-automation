@@ -20,6 +20,9 @@ variables:
   - group: ms-agent-settings
   - group: proxmox-settings
 
+# This pipeline is used to disable and cleanup old build agents.  
+# Disabling old agents first is required, as you cannot delete an agent that is currently running a job.
+
 jobs:
   - job: disable_build_agents
     displayName: Disable Build Agents
@@ -60,7 +63,7 @@ jobs:
           Write-Host "Import provisioning modules"
           Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
           Install-Module -Name Corsinvest.ProxmoxVE.Api -Force
-          
+
           Write-Host "Configure Unifi Client Settings"
           Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
           Set-UnifiEnvironmentVariables -provisionUrl $(unifi-wrapper-url) -provisionGroup $(unifi-provisioning-group)
