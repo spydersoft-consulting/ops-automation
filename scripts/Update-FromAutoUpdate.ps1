@@ -45,64 +45,70 @@ $updateFile = Get-ChildItem "auto-update.json" -ErrorAction SilentlyContinue;
 
 $json = Get-Content $updateFile -Raw | ConvertFrom-Json
 
-$type = "github"
-if ($null -ne $json.type) {
-    $type = $json.type
-}
-
-if ($type -eq "github") {
-    $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($json.repository)/releases/latest"
-
-    $version = $latest.tag_name
-    if ($json.stripVFromVersion) {
-        $version = $version.Trim("v");
-    }
-    $versionV = New-Object "System.Management.Automation.SemanticVersion" $version.replace("v", "")
-}
-elseif ($type -eq "docker") {
-    
-    $registryUrl = "https://registry.hub.docker.com/v2"
-    if (-not [String]::IsNullOrWhiteSpace($json.registryUrl)) {
-        $registryUrl = $json.registryUrl
-    }
-
-    $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($json.repository)/tags/list"
-    $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object { New-Object "System.Management.Automation.SemanticVersion" $_ } | Sort-Object -descending | Select-Object -First 1
-    $version = $versionV.ToString()
-}
-
 $valuesYaml = Get-Content .\values.yaml -Raw | ConvertFrom-Yaml
 
-# Get current tag value    
-$expression = "`$valuesYaml.$($json.tagPath)"
-$currentVersion = Invoke-Expression $expression
+$repositoryUpdated = $false
 
-if ($null -eq $currentVersion) {
-    Pop-Location
-    return @{
-        updated = $false
-        comment = ""
+foreach ($repository in $json.repositories) {
+    $type = "github"
+    if ($null -ne $repository.type) {
+        $type = $repository.type
     }
+
+    if ($type -eq "github") {
+        $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($repository.repository)/releases/latest"
+
+        $version = $latest.tag_name
+
+        if ($null -ne $repository.imagePrefix) {
+            $version = $version.replace($repository.imagePrefix, "")
+        }
+
+        $versionV = New-Object "System.Management.Automation.SemanticVersion" $version
+    }
+    elseif ($type -eq "docker") {
+        
+        $registryUrl = "https://registry.hub.docker.com/v2"
+        if (-not [String]::IsNullOrWhiteSpace($repository.registryUrl)) {
+            $registryUrl = $repository.registryUrl
+        }
+
+        $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($repository.repository)/tags/list"
+        $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object { New-Object "System.Management.Automation.SemanticVersion" $_ } | Sort-Object -descending | Select-Object -First 1
+        $version = $versionV.ToString()
+    }
+
+    # Get current tag value    
+    $expression = "`$valuesYaml.$($repository.tagPath)"
+    $currentVersion = Invoke-Expression $expression
+
+    if ($null -eq $currentVersion) {
+        continue
+    }
+
+
+    $currentV = New-Object "System.Management.Automation.SemanticVersion" $currentVersion.replace("v", "")
+    if ($currentV -ge $versionV) {
+        continue
+    }
+
+    Write-Host "Updating $name : $currentVersion -> $version"
+    $commitComment += "Bump $name from $currentVersion to $version"
+    $expression = "`$valuesYaml.$($repository.tagPath) = `"$version`""
+    Invoke-Expression $expression
+
+    $repositoryUpdated = $true
 }
 
-
-$currentV = New-Object "System.Management.Automation.SemanticVersion" $currentVersion.replace("v", "")
-if ($currentV -ge $versionV) {
-    Pop-Location
-    return @{
-        updated = $false
-        comment = ""
-    }
+if ($repositoryUpdated) {
+    $commitComment = "Update $name to latest versions"
+    ConvertTo-Yaml $valuesYaml | Set-Content .\values.yaml
 }
-
-Write-Host "Updating $name : $currentVersion -> $version"
-$commitComment += "Bump $name from $currentVersion to $version"
-$expression = "`$valuesYaml.$($json.tagPath) = `"$version`""
-Invoke-Expression $expression
-
-ConvertTo-Yaml $valuesYaml | Set-Content .\values.yaml
+else {
+    $commitComment = "No updates found for $name"
+}
 Pop-Location
 return @{
-    updated = $true
+    updated = $repositoryUpdated
     comment = $commitComment
 }
