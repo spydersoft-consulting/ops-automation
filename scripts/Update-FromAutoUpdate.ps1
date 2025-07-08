@@ -61,7 +61,9 @@ foreach ($repository in $json.repositories) {
         $version = $latest.tag_name
 
         if ($null -ne $repository.imagePrefix) {
-            $version = $version.replace($repository.imagePrefix, "")
+            if ($version.StartsWith($repository.imagePrefix)) {
+                $version = $version.Substring($repository.imagePrefix.Length)
+            }
         }
 
         $versionV = New-Object "System.Management.Automation.SemanticVersion" $version
