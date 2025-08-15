@@ -1,12 +1,12 @@
 trigger: none
 pr: none
-schedules:
-  - cron: "0 4 15 * *"
-    displayName: "Build Agent Creation"
-    always: true
-    branches:
-      include:
-        - main
+# schedules:
+#   - cron: "0 4 15 * *"
+#     displayName: "Build Agent Creation"
+#     always: true
+#     branches:
+#       include:
+#         - main
 
 resources:
   repositories:
@@ -65,6 +65,9 @@ jobs:
           $agent_version = $agent_release.tag_name.Replace("v", "")
           "ms_agent_url = `"https://download.agent.dev.azure.com/agent/$($agent_version)`"" | Add-Content $secretPath
           "ms_agent_filename = `"vsts-agent-linux-x64-$($agent_version).tar.gz`"" | Add-Content $secretPath
+
+
+          $msBuildSettings = Get-Content "$(Build.SourcesDirectory)/provisioning/msBuildAgentVmSettings.json" | ConvertFrom-JSON
 
           Write-Host "Set Proxmox Settings"
           Set-ProxmoxSettings -hostsAndPorts $(proxmox-host) -apiToken $(proxmox-api-token)
