@@ -88,7 +88,6 @@ foreach ($repository in $json.repositories) {
         continue
     }
 
-
     $currentV = New-Object "System.Management.Automation.SemanticVersion" $currentVersion.replace("v", "")
     if ($currentV -ge $versionV) {
         continue
@@ -96,6 +95,16 @@ foreach ($repository in $json.repositories) {
 
     Write-Host "Updating $name : $currentVersion -> $version"
     $commitComment += "Bump $name from $currentVersion to $version"
+
+    $keepImagePrefixInVersion = $false
+    if ($null -ne $repository.keepImagePrefix && $repository.keepImagePrefix -eq $true) {
+        $keepImagePrefixInVersion = $repository.keepImagePrefix
+    }
+
+    if ($keepImagePrefixInVersion) {
+        $version = "$($repository.imagePrefix)$($version)"
+    }
+
     $expression = "`$valuesYaml.$($repository.tagPath) = `"$version`""
     Invoke-Expression $expression
 
