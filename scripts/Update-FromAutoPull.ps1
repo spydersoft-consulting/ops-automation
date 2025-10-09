@@ -53,11 +53,11 @@ foreach ($sourceRepo in $sourceRepos) {
 
         foreach ($file in $autoPullConfig.files) {
 
+            $filePath = Join-Path $autoPullFile.DirectoryName $file.path
+
             Write-Host "Downloading $($file.name)"
             Write-Host "  Source: $($file.url)"
-            Write-Host "  Destination: $($file.path)"
-
-            $filePath = Join-Path $autoPullFile.DirectoryName $file.path
+            Write-Host "  Destination: $($filePath)"
 
             Invoke-WebRequest -Uri $file.url -OutFile $filePath
         }
