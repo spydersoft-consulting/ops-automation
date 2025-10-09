@@ -8,7 +8,7 @@
             Chart.yaml is updated with the new version
             Chart.lock is updated by calling helm dependency update
 
-        In addition, if an `auto-update.json` file is present, `Update-FromAutoUpdate.ps1` is run on that folder to update tasgs from external sources.
+        In addition, if an `auto-update.json` file is present, `Update-HelmFromAutoUpdate.ps1` is run on that folder to update tasgs from external sources.
 
         This script assumes that the `helm` command is available on your local machine.
 
@@ -85,7 +85,7 @@ foreach ($sourceRepo in $sourceRepos) {
                 $updated = $true
             }
         }
-        $updateScript = Join-Path $scriptRoot "Update-FromAutoUpdate.ps1"
+        $updateScript = Join-Path $scriptRoot "Update-HelmFromAutoUpdate.ps1"
         $githubUpdate = Invoke-Expression "$updateScript -path $($chart.DirectoryName) -name $chartDisplay"
         if ($githubUpdate.updated) {
             $updated = $true
