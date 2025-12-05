@@ -62,6 +62,12 @@ foreach ($sourceRepo in $sourceRepos) {
             $name = $yaml.dependencies[$index].name
             $version = New-Object "System.Management.Automation.SemanticVersion" $yaml.dependencies[$index].version.replace("v", "")
             $url = $yaml.dependencies[$index].repository
+
+            if ($url.Contains("oci://")) {
+                # Skip OCI repos for now
+                continue
+            }
+
             $repo = $repos | Where-Object { $_.url -eq $url } | Select-Object -First 1
             
             $searchResult = ConvertFrom-Json (Invoke-Expression "helm search repo $($repo.name)/$name -o json")
