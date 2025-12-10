@@ -1,4 +1,4 @@
-minio_address            = "https://s3.mattgerega.net"
+minio_address            = "https://gs3.mattgerega.net"
 git_email                = "geregam@gmail.com"
 git_name                 = "Matt Gerega"
 unifi_wrapper_url        = "https://api.mattgerega.com/unifi/ipmanager"
