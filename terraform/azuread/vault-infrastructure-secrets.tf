@@ -67,17 +67,3 @@ resource "vault_kv_secret_v2" "hcvault-app" {
     }
   )
 }
-
-resource "vault_kv_secret_v2" "minio-app" {
-  mount               = "secrets-infra"
-  name                = "azure/applications/minio"
-  cas                 = 1
-  delete_all_versions = true
-  data_json = jsonencode(
-    {
-      appId     = azuread_service_principal.minio.client_id
-      tenant_id = var.azure_directory_id
-      password  = azuread_service_principal_password.minio.value
-    }
-  )
-}
