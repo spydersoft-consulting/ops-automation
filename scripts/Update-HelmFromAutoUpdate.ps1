@@ -60,6 +60,11 @@ foreach ($repository in $json.repositories) {
 
         $version = $latest.tag_name
 
+        if ($latest.tag_name.Contains("beta") -or $latest.tag_name.Contains("alpha") -or $latest.tag_name.Contains("rc")) {
+            # Skip pre-releases
+            continue
+        }
+
         if ($null -ne $repository.imagePrefix) {
             if ($version.StartsWith($repository.imagePrefix)) {
                 $version = $version.Substring($repository.imagePrefix.Length)
