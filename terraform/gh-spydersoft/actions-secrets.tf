@@ -1,46 +1,24 @@
-# resource "github_actions_secret" "windows_dns_api_user" {
-#   repository      = "windows-dns-api"
-#   secret_name     = "RESOURCE_USER"
-#   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["user"]
-# }
+resource "github_actions_organization_secret" "sonar_token" {
+  secret_name     = "SONAR_TOKEN"
+  visibility      = "selected"
+  plaintext_value = data.vault_kv_secret_v2.github-sonar.data["github-actions"]
+  selected_repository_ids = [
+    github_repository.md_to_conf.repo_id, 
+    github_repository.mmm_googletasks.repo_id,
+    github_repository.mmm_prometheusalerts.repo_id,
+    github_repository.mmm_statuspageio.repo_id,
+    github_repository.mmm_synphotoslideshow.repo_id,
+    github_repository.pi_monitor.repo_id,
+    github_repository.react_runtime_config.repo_id
+ ]
+}
 
-# resource "github_actions_secret" "windows_dns_api_token" {
-#   repository      = "windows-dns-api"
-#   secret_name     = "RESOURCE_TOKEN"
-#   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["token"]
-# }
-
-# resource "github_actions_secret" "hyperv_info_api_user" {
-#   repository      = "hyperv-info-api"
-#   secret_name     = "RESOURCE_USER"
-#   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["user"]
-# }
-
-# resource "github_actions_secret" "hyperv_info_api_token" {
-#   repository      = "hyperv-info-api"
-#   secret_name     = "RESOURCE_TOKEN"
-#   plaintext_value = data.vault_kv_secret_v2.github-terraform.data["token"]
-# }
-
-# ### Sonar Token
-
-# resource "github_actions_secret" "sonar_token" {
-#   for_each       = toset(var.sonar_token_repositories)
-#   repository      = each.key
-#   secret_name     = "SONAR_TOKEN"
-#   plaintext_value = data.vault_kv_secret_v2.github-sonar.data["github-actions"]
-# }
-
-# ### PyPI API Token
-
-# resource "github_actions_secret" "md_to_conf_pypi_api_token" {
-#   repository      = "md_to_conf"
-#   secret_name     = "PYPI_API_TOKEN"
-#   plaintext_value = data.vault_kv_secret_v2.github-pypi.data["api-token"]
-# }
-
-# resource "github_actions_secret" "pi_monitor_pypi_api_token" {
-#   repository      = "pi-monitor"
-#   secret_name     = "PYPI_API_TOKEN"
-#   plaintext_value = data.vault_kv_secret_v2.github-pypi.data["api-token"]
-# }
+resource "github_actions_organization_secret" "pypi_api_token" {
+  secret_name     = "PYPI_API_TOKEN"
+  visibility      = "selected"
+  plaintext_value = data.vault_kv_secret_v2.github-pypi.data["api-token"]
+  selected_repository_ids = [
+    github_repository.md_to_conf.repo_id, 
+    github_repository.pi_monitor.repo_id,
+ ]
+}
