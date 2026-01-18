@@ -23,5 +23,6 @@ provider "vault" {
 }
 
 provider "github" {
-  token = var.github_token
+  owner = "spydersoft-consulting"
+  #token = var.github_token
 }

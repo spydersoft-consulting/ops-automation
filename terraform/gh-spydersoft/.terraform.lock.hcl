@@ -4,6 +4,7 @@
 provider "registry.opentofu.org/hashicorp/github" {
   version = "6.4.0"
   hashes = [
+    "h1:lvtFaM9YXwQdiTeYUXCrb4CgBhDj1kjlkwLMiwQypT0=",
     "h1:sJvuRMYWJ/ykZXTuoCuocHvx06hTwDVrXVVXq1814bw=",
     "zh:00f431c2a2510efcb1115442dda5e90815bcb16e1a3301679ade0139fa963d3b",
     "zh:12a862f4317b3cb65682c1b687650cd91eeee99e63774bdcfa8bcfc64bad097b",
@@ -27,6 +28,7 @@ provider "registry.opentofu.org/hashicorp/vault" {
   version = "4.5.0"
   hashes = [
     "h1:2zN1LdTCiEpE8QWTbIcA+SDIGBXI52mwFMmwupWjfhE=",
+    "h1:eYsZDIQRjo/AXdbHVTr5iTGERd/wJ4dx9ofAZQubMRw=",
     "zh:006189f781957a6128cfc71ea6e78015117dd8d618ca440a526feabf8168c708",
     "zh:01ea4b69af85ab3efaf07c94e716cfbea45c2c052fdfddbcf0194d28a8590d3f",
     "zh:21824df7ed7e5b2f596bf513c919a87663faf62bd4796c3d64df3de864af1397",
@@ -43,6 +45,7 @@ provider "registry.opentofu.org/hashicorp/vault" {
 provider "registry.opentofu.org/integrations/github" {
   version = "6.4.0"
   hashes = [
+    "h1:lvtFaM9YXwQdiTeYUXCrb4CgBhDj1kjlkwLMiwQypT0=",
     "h1:sJvuRMYWJ/ykZXTuoCuocHvx06hTwDVrXVVXq1814bw=",
     "zh:00f431c2a2510efcb1115442dda5e90815bcb16e1a3301679ade0139fa963d3b",
     "zh:12a862f4317b3cb65682c1b687650cd91eeee99e63774bdcfa8bcfc64bad097b",
