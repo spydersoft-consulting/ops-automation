@@ -30,9 +30,31 @@ resource "github_repository" "mmm_synphotoslideshow" {
   }
 }
 
+resource "github_branch_protection" "mmm_synphotoslideshow_main" {
+  repository_id = github_repository.mmm_synphotoslideshow.node_id
+  pattern       = "main"
 
-import {
-  to = github_repository.mmm_synphotoslideshow
-  id = "MMM-SynPhotoSlideshow" # The unique ID of the resource in GitHub
+  allows_deletions                = false
+  allows_force_pushes             = false
+  enforce_admins                  = false
+  force_push_bypassers            = []
+  lock_branch                     = false
+  require_conversation_resolution = true
+  require_signed_commits          = false
+  required_linear_history         = false
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = false
+    dismissal_restrictions          = []
+    pull_request_bypassers          = []
+    require_code_owner_reviews      = true
+    require_last_push_approval      = false
+    required_approving_review_count = 0
+    restrict_dismissals             = false
+  }
+
+  required_status_checks {
+    contexts = []
+    strict   = true
+  }
 }
-    

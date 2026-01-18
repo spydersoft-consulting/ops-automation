@@ -18,7 +18,6 @@ resource "github_repository" "azure_devops_templates" {
   visibility                  = "public"
   vulnerability_alerts        = false
   web_commit_signoff_required = false
-
   security_and_analysis {
       secret_scanning {
           status = "disabled"
