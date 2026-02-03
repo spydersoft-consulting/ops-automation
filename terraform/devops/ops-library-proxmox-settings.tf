@@ -11,6 +11,6 @@ resource "azuredevops_variable_group" "proxmox-settings" {
 
   variable {
     name  = "proxmox-api-token"
-    value = data.vault_kv_secret_v2.proxmox-settings.data["apiToken"]
+    secret_value = data.vault_kv_secret_v2.proxmox-settings.data["apiToken"]
   }
 }
