@@ -64,8 +64,9 @@ resource "time_rotating" "argocd" {
   rotation_days = 7
 }
 
-resource "azuread_service_principal_password" "argocd" {
-  service_principal_id = azuread_service_principal.argocd.id
+resource "azuread_application_password" "argocd" {
+  application_id      = azuread_application.argocd.id
+  display_name        = "Terraform-managed client secret"
   rotate_when_changed = {
     rotation = time_rotating.argocd.id
   }

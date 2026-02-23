@@ -52,9 +52,37 @@ resource "time_rotating" "hcvault" {
   rotation_days = 7
 }
 
-resource "azuread_service_principal_password" "hcvault" {
-  service_principal_id = azuread_service_principal.hcvault.id
+resource "azuread_application_password" "hcvault" {
+  application_id      = azuread_application.hcvault.id
+  display_name        = "Terraform-managed OIDC client secret"
   rotate_when_changed = {
     rotation = time_rotating.hcvault.id
   }
+}
+
+resource "vault_jwt_auth_backend" "oidc" {
+  description        = "Azure AD OIDC authentication"
+  path               = "oidc"
+  type               = "oidc"
+  oidc_discovery_url = "https://login.microsoftonline.com/${var.azure_directory_id}/v2.0"
+  oidc_client_id     = azuread_application.hcvault.client_id
+  oidc_client_secret = azuread_application_password.hcvault.value
+  default_role       = "aad-role"
+}
+
+resource "vault_jwt_auth_backend_role" "aad_role" {
+  backend   = vault_jwt_auth_backend.oidc.path
+  role_name = "aad-role"
+  role_type = "oidc"
+
+  user_claim   = "sub"
+  groups_claim = "groups"
+  oidc_scopes  = ["https://graph.microsoft.com/.default"]
+
+  token_policies = ["default"]
+
+  allowed_redirect_uris = [
+    "http://localhost:8250/oidc/callback",
+    "https://hcvault.mattgerega.net/ui/vault/auth/oidc/oidc/callback",
+  ]
 }

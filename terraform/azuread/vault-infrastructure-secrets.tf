@@ -33,9 +33,9 @@ resource "vault_kv_secret_v2" "grafana-app" {
   delete_all_versions = true
   data_json = jsonencode(
     {
-      appId     = azuread_service_principal.grafana.client_id
+      appId     = azuread_application.grafana.client_id
       tenant_id = var.azure_directory_id
-      password  = azuread_service_principal_password.grafana.value
+      password  = azuread_application_password.grafana.value
     }
   )
 }
@@ -47,9 +47,9 @@ resource "vault_kv_secret_v2" "argocd-app" {
   delete_all_versions = true
   data_json = jsonencode(
     {
-      appId     = azuread_service_principal.argocd.client_id
+      appId     = azuread_application.argocd.client_id
       tenant_id = var.azure_directory_id
-      password  = azuread_service_principal_password.argocd.value
+      password  = azuread_application_password.argocd.value
     }
   )
 }
@@ -61,9 +61,9 @@ resource "vault_kv_secret_v2" "hcvault-app" {
   delete_all_versions = true
   data_json = jsonencode(
     {
-      appId     = azuread_service_principal.hcvault.client_id
+      appId     = azuread_application.hcvault.client_id
       tenant_id = var.azure_directory_id
-      password  = azuread_service_principal_password.hcvault.value
+      password  = azuread_application_password.hcvault.value
     }
   )
 }

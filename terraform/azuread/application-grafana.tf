@@ -54,8 +54,9 @@ resource "time_rotating" "grafana" {
   rotation_days = 7
 }
 
-resource "azuread_service_principal_password" "grafana" {
-  service_principal_id = azuread_service_principal.grafana.id
+resource "azuread_application_password" "grafana" {
+  application_id      = azuread_application.grafana.id
+  display_name        = "Terraform-managed client secret"
   rotate_when_changed = {
     rotation = time_rotating.grafana.id
   }
