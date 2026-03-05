@@ -16,14 +16,45 @@ resource "azuread_service_principal" "tf-azuread" {
   owners                       = [data.azuread_user.owner.object_id]
 }
 
-resource "time_rotating" "tf-azuread" {
-  rotation_days = 7
+# Overlapping rotation: two passwords with staggered 30-day rotation.
+# At most one password rotates at a time; the other remains valid.
+
+moved {
+  from = time_rotating.tf-azuread
+  to   = time_rotating.tf-azuread-a
 }
 
-resource "azuread_service_principal_password" "tf-azuread" {
+moved {
+  from = azuread_service_principal_password.tf-azuread
+  to   = azuread_service_principal_password.tf-azuread-a
+}
+
+resource "time_rotating" "tf-azuread-a" {
+  rotation_days = local.rotation_days
+  rfc3339       = time_static.rotation_base.rfc3339
+}
+
+resource "time_rotating" "tf-azuread-b" {
+  rotation_days = local.rotation_days
+  rfc3339       = timeadd(time_static.rotation_base.rfc3339, local.offset)
+}
+
+resource "azuread_service_principal_password" "tf-azuread-a" {
   service_principal_id = azuread_service_principal.tf-azuread.id
   rotate_when_changed = {
-    rotation = time_rotating.tf-azuread.id
+    rotation = time_rotating.tf-azuread-a.id
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+resource "azuread_service_principal_password" "tf-azuread-b" {
+  service_principal_id = azuread_service_principal.tf-azuread.id
+  rotate_when_changed = {
+    rotation = time_rotating.tf-azuread-b.id
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}

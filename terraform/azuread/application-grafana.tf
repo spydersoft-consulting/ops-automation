@@ -50,14 +50,47 @@ resource "azuread_service_principal" "grafana" {
   tags                         = ["HideApp", "WindowsAzureActiveDirectoryIntegratedApp"]
 }
 
-resource "time_rotating" "grafana" {
-  rotation_days = 7
+# Overlapping rotation: two passwords with staggered 30-day rotation.
+# At most one password rotates at a time; the other remains valid.
+
+moved {
+  from = time_rotating.grafana
+  to   = time_rotating.grafana-a
 }
 
-resource "azuread_application_password" "grafana" {
+moved {
+  from = azuread_application_password.grafana
+  to   = azuread_application_password.grafana-a
+}
+
+resource "time_rotating" "grafana-a" {
+  rotation_days = local.rotation_days
+  rfc3339       = time_static.rotation_base.rfc3339
+}
+
+resource "time_rotating" "grafana-b" {
+  rotation_days = local.rotation_days
+  rfc3339       = timeadd(time_static.rotation_base.rfc3339, local.offset)
+}
+
+resource "azuread_application_password" "grafana-a" {
   application_id      = azuread_application.grafana.id
   display_name        = "Terraform-managed client secret"
   rotate_when_changed = {
-    rotation = time_rotating.grafana.id
+    rotation = time_rotating.grafana-a.id
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "azuread_application_password" "grafana-b" {
+  application_id      = azuread_application.grafana.id
+  display_name        = "Terraform-managed client secret"
+  rotate_when_changed = {
+    rotation = time_rotating.grafana-b.id
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }

@@ -48,15 +48,48 @@ resource "azuread_service_principal" "hcvault" {
   tags                         = ["WindowsAzureActiveDirectoryIntegratedApp"]
 }
 
-resource "time_rotating" "hcvault" {
-  rotation_days = 7
+# Overlapping rotation: two passwords with staggered 30-day rotation.
+# At most one password rotates at a time; the other remains valid.
+
+moved {
+  from = time_rotating.hcvault
+  to   = time_rotating.hcvault-a
 }
 
-resource "azuread_application_password" "hcvault" {
+moved {
+  from = azuread_application_password.hcvault
+  to   = azuread_application_password.hcvault-a
+}
+
+resource "time_rotating" "hcvault-a" {
+  rotation_days = local.rotation_days
+  rfc3339       = time_static.rotation_base.rfc3339
+}
+
+resource "time_rotating" "hcvault-b" {
+  rotation_days = local.rotation_days
+  rfc3339       = timeadd(time_static.rotation_base.rfc3339, local.offset)
+}
+
+resource "azuread_application_password" "hcvault-a" {
   application_id      = azuread_application.hcvault.id
   display_name        = "Terraform-managed OIDC client secret"
   rotate_when_changed = {
-    rotation = time_rotating.hcvault.id
+    rotation = time_rotating.hcvault-a.id
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "azuread_application_password" "hcvault-b" {
+  application_id      = azuread_application.hcvault.id
+  display_name        = "Terraform-managed OIDC client secret"
+  rotate_when_changed = {
+    rotation = time_rotating.hcvault-b.id
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -66,7 +99,7 @@ resource "vault_jwt_auth_backend" "oidc" {
   type               = "oidc"
   oidc_discovery_url = "https://login.microsoftonline.com/${var.azure_directory_id}/v2.0"
   oidc_client_id     = azuread_application.hcvault.client_id
-  oidc_client_secret = azuread_application_password.hcvault.value
+  oidc_client_secret = local.hcvault_primary
   default_role       = "aad-role"
 }
 

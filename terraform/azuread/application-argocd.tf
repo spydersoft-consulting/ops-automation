@@ -60,14 +60,47 @@ resource "azuread_service_principal" "argocd" {
   tags                          = ["WindowsAzureActiveDirectoryCustomSingleSignOnApplication", "WindowsAzureActiveDirectoryIntegratedApp"]
 }
 
-resource "time_rotating" "argocd" {
-  rotation_days = 7
+# Overlapping rotation: two passwords with staggered 30-day rotation.
+# At most one password rotates at a time; the other remains valid.
+
+moved {
+  from = time_rotating.argocd
+  to   = time_rotating.argocd-a
 }
 
-resource "azuread_application_password" "argocd" {
+moved {
+  from = azuread_application_password.argocd
+  to   = azuread_application_password.argocd-a
+}
+
+resource "time_rotating" "argocd-a" {
+  rotation_days = local.rotation_days
+  rfc3339       = time_static.rotation_base.rfc3339
+}
+
+resource "time_rotating" "argocd-b" {
+  rotation_days = local.rotation_days
+  rfc3339       = timeadd(time_static.rotation_base.rfc3339, local.offset)
+}
+
+resource "azuread_application_password" "argocd-a" {
   application_id      = azuread_application.argocd.id
   display_name        = "Terraform-managed client secret"
   rotate_when_changed = {
-    rotation = time_rotating.argocd.id
+    rotation = time_rotating.argocd-a.id
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "azuread_application_password" "argocd-b" {
+  application_id      = azuread_application.argocd.id
+  display_name        = "Terraform-managed client secret"
+  rotate_when_changed = {
+    rotation = time_rotating.argocd-b.id
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
