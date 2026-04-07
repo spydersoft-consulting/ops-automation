@@ -12,7 +12,7 @@ extends:
     maxAgeDays: 14
     useStageUnifi: false
     minServerCount: 1  # Nonprod can have 1 server minimum
-    minAgentCount: 3
+    minAgentCount: 2
     maxConcurrentProvision: 1
     maxServersPerRun: 1  # Cycle 1 server per run (controlled rolling)
     maxAgentsPerRun: 2   # Cycle 2 agents per run (controlled rolling)
