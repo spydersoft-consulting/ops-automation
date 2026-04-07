@@ -1,0 +1,31 @@
+trigger: none
+pr: none
+
+# Schedule for evening hours (adjust timezone as needed)
+# This cron runs at 10 PM (22:00) every Sunday
+# Production runs last after nonprod and internal have completed successfully
+schedules:
+  - cron: "0 22 * * 0"
+    displayName: "Production Cluster Cycling (Sunday 10 PM)"
+    branches:
+      include:
+        - main
+    always: false  # Only run if there have been changes since last run
+
+extends:
+  template: template-clustercycle-v2.yaml
+  parameters:
+    clusterName: production
+    dnsDomain: "gerega.net"
+    serverVmSize: "med"
+    agentVmSize: "large"
+    dryRun: false
+    maxAgeDays: 14
+    useStageUnifi: false
+    minServerCount: 3  # Production requires 3 servers minimum for HA
+    minAgentCount: 2
+    maxConcurrentProvision: 1
+    maxServersPerRun: 1  # Cycle 1 server per run (controlled rolling)
+    maxAgentsPerRun: 1   # Cycle 1 agent per run (extra conservative for prod)
+    skipServerCycling: false
+    skipAgentCycling: false

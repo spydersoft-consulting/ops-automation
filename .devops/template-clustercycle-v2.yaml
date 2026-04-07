@@ -1,0 +1,546 @@
+parameters:
+  - name: clusterName
+    type: string
+  - name: dnsDomain
+    type: string
+    default: "gerega.net"
+  - name: serverVmSize
+    type: string
+    default: "med"
+    values:
+      - small
+      - med
+      - large
+  - name: agentVmSize
+    type: string
+    default: "large"
+    values:
+      - small
+      - med
+      - large
+  - name: dryRun
+    type: boolean
+    default: false
+  - name: maxAgeDays
+    type: number
+    default: 14
+  - name: useStageUnifi
+    type: boolean
+    default: false
+  - name: minServerCount
+    type: number
+    default: 3
+  - name: minAgentCount
+    type: number
+    default: 3
+  - name: maxConcurrentProvision
+    type: number
+    default: 1
+  - name: maxServersPerRun
+    type: number
+    default: 0
+  - name: maxAgentsPerRun
+    type: number
+    default: 0
+  - name: skipServerCycling
+    type: boolean
+    default: false
+  - name: skipAgentCycling
+    type: boolean
+    default: false
+  - name: rke2Version
+    type: string
+    default: ""
+    displayName: "RKE2 Version (leave empty to use channel)"
+  - name: rke2Channel
+    type: string
+    default: "stable"
+    displayName: "RKE2 Channel (stable, latest, testing, or v1.xx)"
+    values:
+      - stable
+      - latest
+      - testing
+      - v1.28
+      - v1.29
+      - v1.30
+      - v1.31
+  - name: skipApprovals
+    type: boolean
+    default: false
+    displayName: "Skip Manual Approvals (for scheduled runs)"
+
+resources:
+  repositories:
+    - repository: provisioning
+      type: github
+      endpoint: "Github"
+      name: spyder007/provisioning-projects
+
+variables:
+  - ${{ if eq(parameters.useStageUnifi, true) }}:
+      - group: auth-stage-api-credentials
+      - group: unifi-stage-api
+  - ${{ if eq(parameters.useStageUnifi, false) }}:
+      - group: auth-api-credentials
+      - group: unifi-api
+
+stages:
+  # ========================================
+  # STAGE 0: Pre-Flight Validation
+  # ========================================
+  - stage: PreFlight
+    displayName: "Phase 0: Pre-Flight Validation"
+    jobs:
+      - job: ValidateCluster
+        displayName: "Validate Cluster Ready for Cycling"
+        timeoutInMinutes: 30
+        pool:
+          name: Provisioning
+        steps:
+          - checkout: self
+            path: s/automation
+          - checkout: provisioning
+            path: s/provisioning
+
+          - task: DownloadSecureFile@1
+            name: secretvars
+            inputs:
+              secureFile: ubuntu-base-secrets.pkrvars.hcl
+
+          - task: DownloadSecureFile@1
+            name: authkeys
+            inputs:
+              secureFile: authorized_keys
+
+          - powershell: |
+              Install-Module powershell-yaml -Force
+
+              $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+              $regexAddPath = [regex]::Escape($addPath)
+              $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+              $env:Path = ($arrPath + $addPath) -join ';'
+
+              Write-Host "Import provisioning modules"
+              Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+              Write-Host "Configure Unifi Client Settings"
+              Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
+              Set-UnifiEnvironmentVariables -provisionUrl $(unifi-url)
+
+              Write-Host ""
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host "Phase 0: Pre-Flight Validation" -ForegroundColor Cyan
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host "Cluster: ${{ parameters.clusterName }}" -ForegroundColor Yellow
+              Write-Host "Dry Run: ${{ parameters.dryRun }}" -ForegroundColor Yellow
+              Write-Host ""
+
+              $ErrorActionPreference = "Stop"
+
+              try {
+                  Write-Host "1. Testing cluster connectivity..." -ForegroundColor Green
+                  $clusterReady = Test-ClusterReadyForCycling `
+                      -ClusterName "${{ parameters.clusterName }}" `
+                      -MinServerCount ${{ parameters.minServerCount }} `
+                      -MinAgentCount ${{ parameters.minAgentCount }}
+
+                  if (-not $clusterReady.Success) {
+                      Write-Error "Cluster validation failed: $($clusterReady.Error)"
+                      exit 1
+                  }
+
+                  Write-Host "2. Checking production service dependencies..." -ForegroundColor Green
+                  $depCheck = Test-ProductionServicesAvailable
+                  if (-not $depCheck.AllAvailable) {
+                      Write-Warning "Some production dependencies unavailable"
+                      $depCheck.Services.GetEnumerator() | ForEach-Object {
+                          $status = if ($_.Value.Available) { "OK" } else { "FAILED: $($_.Value.Error)" }
+                          Write-Host "  $($_.Key): $status"
+                      }
+                      exit 1
+                  }
+
+                  Write-Host "3. Checking Proxmox storage capacity..." -ForegroundColor Green
+                  $storageCapacity = Test-ProxmoxStorageCapacity -Node "pxhp" -MinFreePercent 25
+                  if (-not $storageCapacity.HasSufficientSpace) {
+                      Write-Error "Insufficient Proxmox storage: $($storageCapacity.FreePercent)% free (requires >25%)"
+                      exit 1
+                  }
+                  Write-Host "  Storage OK: $([Math]::Round($storageCapacity.FreePercent, 1))% free"
+
+                  Write-Host ""
+                  Write-Host "Pre-Flight Validation: PASSED" -ForegroundColor Green
+                  Write-Host "Cluster is ready for cycling" -ForegroundColor Green
+
+              } catch {
+                  Write-Error "Pre-flight validation failed: $_"
+                  exit 1
+              }
+
+            displayName: "Pre-Flight Validation"
+
+  # ========================================
+  # STAGE 1: Server Node Cycling
+  # ========================================
+  - stage: ServerCycling
+    displayName: "Phase 1: Server Node Cycling"
+    dependsOn: PreFlight
+    condition: and(succeeded(), eq('${{ parameters.skipServerCycling }}', 'false'))
+    jobs:
+      - job: WaitForApproval
+        displayName: "Approval: Proceed with Server Cycling"
+        condition: eq('${{ parameters.skipApprovals }}', 'false')
+        pool: server
+        timeoutInMinutes: 1440  # 24 hours
+        steps:
+          - task: ManualValidation@0
+            inputs:
+              notifyUsers: ''
+              instructions: 'Pre-flight validation passed. Approve to proceed with server node cycling for cluster: ${{ parameters.clusterName }}'
+              onTimeout: 'reject'
+
+      - job: CycleServers
+        displayName: "Cycle Server Nodes"
+        dependsOn: WaitForApproval
+        condition: in(dependencies.WaitForApproval.result, 'Succeeded', 'Skipped')
+        timeoutInMinutes: 240
+        pool:
+          name: Provisioning
+        steps:
+          - checkout: self
+            path: s/automation
+          - checkout: provisioning
+            path: s/provisioning
+
+          - task: DownloadSecureFile@1
+            name: secretvars
+            inputs:
+              secureFile: ubuntu-base-secrets.pkrvars.hcl
+
+          - task: DownloadSecureFile@1
+            name: authkeys
+            inputs:
+              secureFile: authorized_keys
+
+          - powershell: |
+              Install-Module powershell-yaml -Force
+
+              $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+              $regexAddPath = [regex]::Escape($addPath)
+              $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+              $env:Path = ($arrPath + $addPath) -join ';'
+
+              Write-Host "Import provisioning modules"
+              Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+              Write-Host "Copy authorized keys to files"
+              if (-not (Test-Path "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/")) {
+                New-Item -ItemType Directory "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/"
+              }
+              Copy-Item "$(authkeys.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
+
+              Write-Host "Finding latest base image"
+              $baseImage = Get-ChildItem \\cloud.gerega.net\Images\bases\ubuntu-* | Sort-Object -Property Name -Descending | Select-Object -first 1
+              $imageFolder = Get-ChildItem $baseImage.FullName | Select-Object -first 1
+
+              Write-Host "Using $($imageFolder.FullName) for Base Image"
+              Set-Rke2Settings -nodePrefix "gk" -clusterStorage "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
+
+              Write-Host "Configure Unifi Client Settings"
+              Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
+              Set-UnifiEnvironmentVariables -provisionUrl $(unifi-url) -provisionGroup $(unifi-provisioning-group)
+
+              Write-Host ""
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host "Phase 1: Server Node Cycling" -ForegroundColor Cyan
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host ""
+
+              $ErrorActionPreference = "Stop"
+              Push-Location "$(Build.SourcesDirectory)\provisioning"
+
+              try {
+                  if ($${{ parameters.dryRun }}) {
+                      Write-Host "DRY RUN MODE - No changes will be made" -ForegroundColor Yellow
+                      Write-Host ""
+
+                      $servers = Get-Rke2AgedNodes -ClusterName "${{ parameters.clusterName }}" -NodeType "server" -DaysOld ${{ parameters.maxAgeDays }}
+                      Write-Host "Would cycle $($servers.Count) server nodes:"
+                      $servers | Format-Table Name, Age, Status | Out-String | Write-Host
+
+                      exit 0
+                  }
+
+                  Write-Host "Cycling server nodes for cluster: ${{ parameters.clusterName }}" -ForegroundColor Green
+
+                  $result = Invoke-Rke2ServerCycling `
+                      -ClusterName "${{ parameters.clusterName }}" `
+                      -DnsDomain "${{ parameters.dnsDomain }}" `
+                      -VmSize "${{ parameters.serverVmSize }}" `
+                      -MaxAgeDays ${{ parameters.maxAgeDays }} `
+                      -MaxServersPerRun ${{ parameters.maxServersPerRun }} `
+                      -MaxConcurrentProvision ${{ parameters.maxConcurrentProvision }} `
+                      -Rke2Version "${{ parameters.rke2Version }}" `
+                      -Rke2Channel "${{ parameters.rke2Channel }}"
+
+                  if ($result.Success) {
+                      Write-Host ""
+                      Write-Host "Server cycling completed successfully" -ForegroundColor Green
+                      Write-Host "  Servers Added: $($result.ServersAdded)" -ForegroundColor Cyan
+                      Write-Host "  Servers Removed: $($result.ServersRemoved)" -ForegroundColor Cyan
+
+                      echo "##vso[task.setvariable variable=serversChanged;isOutput=true]$($result.ServersAdded -gt 0 -or $result.ServersRemoved -gt 0)"
+                  } else {
+                      Write-Error "Server cycling failed: $($result.Error)"
+                      exit 1
+                  }
+
+              } catch {
+                  Write-Error "Server cycling failed: $_"
+                  Write-Host $_.ScriptStackTrace
+                  exit 1
+              }
+
+            displayName: "Cycle Server Nodes"
+            name: cycle_servers
+
+  # ========================================
+  # STAGE 2: Agent Node Cycling
+  # ========================================
+  - stage: AgentCycling
+    displayName: "Phase 2: Agent Node Cycling"
+    dependsOn: ServerCycling
+    condition: and(in(dependencies.ServerCycling.result, 'Succeeded', 'Skipped'), eq('${{ parameters.skipAgentCycling }}', 'false'))
+    jobs:
+      - job: WaitForApproval
+        displayName: "Approval: Proceed with Agent Cycling"
+        condition: eq('${{ parameters.skipApprovals }}', 'false')
+        pool: server
+        timeoutInMinutes: 1440  # 24 hours
+        steps:
+          - task: ManualValidation@0
+            inputs:
+              notifyUsers: ''
+              instructions: 'Server cycling complete. Approve to proceed with agent node cycling for cluster: ${{ parameters.clusterName }}'
+              onTimeout: 'reject'
+
+      - job: CycleAgents
+        displayName: "Cycle Agent Nodes"
+        dependsOn: WaitForApproval
+        condition: in(dependencies.WaitForApproval.result, 'Succeeded', 'Skipped')
+        timeoutInMinutes: 360
+        pool:
+          name: Provisioning
+        steps:
+          - checkout: self
+            path: s/automation
+          - checkout: provisioning
+            path: s/provisioning
+
+          - task: DownloadSecureFile@1
+            name: secretvars
+            inputs:
+              secureFile: ubuntu-base-secrets.pkrvars.hcl
+
+          - task: DownloadSecureFile@1
+            name: authkeys
+            inputs:
+              secureFile: authorized_keys
+
+          - powershell: |
+              Install-Module powershell-yaml -Force
+
+              $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+              $regexAddPath = [regex]::Escape($addPath)
+              $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+              $env:Path = ($arrPath + $addPath) -join ';'
+
+              Write-Host "Import provisioning modules"
+              Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+              Write-Host "Copy authorized keys to files"
+              if (-not (Test-Path "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/")) {
+                New-Item -ItemType Directory "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/"
+              }
+              Copy-Item "$(authkeys.secureFilePath)" "$(Build.SourcesDirectory)/provisioning/templates/ubuntu-quick/basic/files/authorized_keys"
+
+              Write-Host "Finding latest base image"
+              $baseImage = Get-ChildItem \\cloud.gerega.net\Images\bases\ubuntu-* | Sort-Object -Property Name -Descending | Select-Object -first 1
+              $imageFolder = Get-ChildItem $baseImage.FullName | Select-Object -first 1
+
+              Write-Host "Using $($imageFolder.FullName) for Base Image"
+              Set-Rke2Settings -nodePrefix "gk" -clusterStorage "\\cloud.gerega.net\rke-info" -secretsVariableFile "$(secretvars.secureFilePath)" -baseVmcxPath "$($imageFolder.FullName)" -baseVmName "$($imageFolder.Name)"
+
+              Write-Host "Configure Unifi Client Settings"
+              Set-AuthApiEnvironmentVariables -authUrl $(auth-url) -clientId $(auth-client-id) -clientSecret "$(auth-client-secret)" -userName $(auth-username) -password "$(auth-password)"
+              Set-UnifiEnvironmentVariables -provisionUrl $(unifi-url) -provisionGroup $(unifi-provisioning-group)
+
+              Write-Host ""
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host "Phase 2: Agent Node Cycling" -ForegroundColor Cyan
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host ""
+
+              $ErrorActionPreference = "Stop"
+              Push-Location "$(Build.SourcesDirectory)\provisioning"
+
+              try {
+                  if ($${{ parameters.dryRun }}) {
+                      Write-Host "DRY RUN MODE - No changes will be made" -ForegroundColor Yellow
+                      Write-Host ""
+
+                      $agents = Get-Rke2AgedNodes -ClusterName "${{ parameters.clusterName }}" -NodeType "agent" -DaysOld ${{ parameters.maxAgeDays }}
+                      Write-Host "Would cycle $($agents.Count) agent nodes:"
+                      $agents | Format-Table Name, Age, Status | Out-String | Write-Host
+
+                      exit 0
+                  }
+
+                  Write-Host "Cycling agent nodes for cluster: ${{ parameters.clusterName }}" -ForegroundColor Green
+
+                  $result = Invoke-Rke2AgentCycling `
+                      -ClusterName "${{ parameters.clusterName }}" `
+                      -DnsDomain "${{ parameters.dnsDomain }}" `
+                      -VmSize "${{ parameters.agentVmSize }}" `
+                      -MaxAgeDays ${{ parameters.maxAgeDays }} `
+                      -MaxAgentsPerRun ${{ parameters.maxAgentsPerRun }} `
+                      -MaxConcurrentProvision ${{ parameters.maxConcurrentProvision }} `
+                      -Rke2Version "${{ parameters.rke2Version }}" `
+                      -Rke2Channel "${{ parameters.rke2Channel }}"
+
+                  if ($result.Success) {
+                      Write-Host ""
+                      Write-Host "Agent cycling completed successfully" -ForegroundColor Green
+                      Write-Host "  Agents Added: $($result.AgentsAdded)" -ForegroundColor Cyan
+                      Write-Host "  Agents Removed: $($result.AgentsRemoved)" -ForegroundColor Cyan
+
+                      echo "##vso[task.setvariable variable=agentsChanged;isOutput=true]$($result.AgentsAdded -gt 0 -or $result.AgentsRemoved -gt 0)"
+                  } else {
+                      Write-Error "Agent cycling failed: $($result.Error)"
+                      exit 1
+                  }
+
+              } catch {
+                  Write-Error "Agent cycling failed: $_"
+                  Write-Host $_.ScriptStackTrace
+                  exit 1
+              }
+
+            displayName: "Cycle Agent Nodes"
+            name: cycle_agents
+
+  # ========================================
+  # STAGE 3: Post-Cycle Validation
+  # ========================================
+  - stage: PostCycleValidation
+    displayName: "Phase 3: Post-Cycle Validation"
+    dependsOn: AgentCycling
+    condition: in(dependencies.AgentCycling.result, 'Succeeded', 'Skipped')
+    jobs:
+      - job: ValidateCluster
+        displayName: "Validate Cluster Health"
+        timeoutInMinutes: 30
+        pool:
+          name: Provisioning
+        steps:
+          - checkout: self
+            path: s/automation
+          - checkout: provisioning
+            path: s/provisioning
+
+          - task: DownloadSecureFile@1
+            name: secretvars
+            inputs:
+              secureFile: ubuntu-base-secrets.pkrvars.hcl
+
+          - powershell: |
+              Install-Module powershell-yaml -Force
+
+              $addPath = "C:\Program Files\OpenSSL-Win64\bin"
+              $regexAddPath = [regex]::Escape($addPath)
+              $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+              $env:Path = ($arrPath + $addPath) -join ';'
+
+              Write-Host "Import provisioning modules"
+              Get-childItem "$(Build.SourcesDirectory)\provisioning\*.psm1" | % { Import-Module $_.FullName -Force }
+
+              Write-Host ""
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host "Phase 3: Post-Cycle Validation" -ForegroundColor Cyan
+              Write-Host "========================================" -ForegroundColor Cyan
+              Write-Host ""
+
+              $ErrorActionPreference = "Continue"
+
+              try {
+                  Write-Host "1. Checking cluster health..." -ForegroundColor Green
+                  $health = Test-ClusterHealth -ClusterName "${{ parameters.clusterName }}"
+
+                  Write-Host ""
+                  Write-Host "2. Checking node status..." -ForegroundColor Green
+                  $nodes = Get-ClusterNodeInfo -ClusterName "${{ parameters.clusterName }}"
+                  $nodes | Format-Table Name, Status, Age, Roles | Out-String | Write-Host
+
+                  Write-Host ""
+                  Write-Host "3. Checking for unhealthy pods..." -ForegroundColor Green
+                  $unhealthyPods = Get-UnhealthyPods -ClusterName "${{ parameters.clusterName }}"
+                  if ($unhealthyPods.Count -gt 0) {
+                      Write-Warning "Found $($unhealthyPods.Count) unhealthy pods"
+                      $unhealthyPods | Select-Object -First 20 | Format-Table Namespace, Name, Phase, Reason | Out-String | Write-Host
+                  } else {
+                      Write-Host "  All pods healthy" -ForegroundColor Green
+                  }
+
+                  Write-Host ""
+                  Write-Host "4. Checking cluster capacity..." -ForegroundColor Green
+                  $capacity = Get-ClusterCapacity -ClusterName "${{ parameters.clusterName }}"
+                  Write-Host "  CPU: $($capacity.AllocatableCPU) / $($capacity.TotalCPU) ($([Math]::Round($capacity.CPUUtilization * 100, 1))% utilized)"
+                  Write-Host "  Memory: $([Math]::Round($capacity.AllocatableMemory / 1GB, 1))GB / $([Math]::Round($capacity.TotalMemory / 1GB, 1))GB ($([Math]::Round($capacity.MemoryUtilization * 100, 1))% utilized)"
+
+                  Write-Host ""
+                  if ($health.Healthy -and $unhealthyPods.Count -eq 0) {
+                      Write-Host "Post-Cycle Validation: PASSED" -ForegroundColor Green
+                      Write-Host "Cluster is healthy after cycling" -ForegroundColor Green
+                  } else {
+                      Write-Warning "Post-Cycle Validation: WARNINGS DETECTED"
+                      Write-Warning "Please review the health check results above"
+                  }
+
+              } catch {
+                  Write-Error "Post-cycle validation failed: $_"
+                  exit 1
+              }
+
+            displayName: "Post-Cycle Validation"
+
+  # ========================================
+  # STAGE 4: DNS Refresh
+  # ========================================
+  - stage: DnsRefresh
+    displayName: "DNS Refresh"
+    dependsOn:
+      - ServerCycling
+      - AgentCycling
+    condition: |
+      and(
+        in(dependencies.ServerCycling.result, 'Succeeded', 'Skipped'),
+        in(dependencies.AgentCycling.result, 'Succeeded', 'Skipped'),
+        or(
+          eq(dependencies.ServerCycling.outputs['CycleServers.cycle_servers.serversChanged'], 'true'),
+          eq(dependencies.AgentCycling.outputs['CycleAgents.cycle_agents.agentsChanged'], 'true')
+        )
+      )
+    jobs:
+      - job: RestartNginx
+        displayName: "Restart Nginx Proxy"
+        pool:
+          name: Default
+        steps:
+          - task: SSH@0
+            displayName: "Restart Nginx to refresh DNS"
+            inputs:
+              sshEndpoint: m5proxy
+              runOptions: "inline"
+              inline: sudo systemctl restart nginx.service
+              interpreterCommand: "/bin/bash"
+              readyTimeout: "20000"

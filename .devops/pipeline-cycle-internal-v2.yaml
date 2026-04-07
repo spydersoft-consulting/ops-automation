@@ -1,0 +1,30 @@
+trigger: none
+pr: none
+
+# Schedule for evening hours (adjust timezone as needed)
+# This cron runs at 9 PM (21:00) every Sunday
+schedules:
+  - cron: "0 21 * * 0"
+    displayName: "Internal Cluster Cycling (Sunday 9 PM)"
+    branches:
+      include:
+        - main
+    always: false  # Only run if there have been changes since last run
+
+extends:
+  template: template-clustercycle-v2.yaml
+  parameters:
+    clusterName: internal
+    dnsDomain: "gerega.net"
+    serverVmSize: "med"
+    agentVmSize: "large"
+    dryRun: false
+    maxAgeDays: 14
+    useStageUnifi: false
+    minServerCount: 3
+    minAgentCount: 4
+    maxConcurrentProvision: 1
+    maxServersPerRun: 1  # Cycle 1 server per run (controlled rolling)
+    maxAgentsPerRun: 2   # Cycle 2 agents per run (controlled rolling)
+    skipServerCycling: false
+    skipAgentCycling: false
