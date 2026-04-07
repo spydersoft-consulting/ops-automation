@@ -95,7 +95,7 @@ stages:
         displayName: "Validate Cluster Ready for Cycling"
         timeoutInMinutes: 30
         pool:
-          name: Provisioning
+          name: Default
         steps:
           - checkout: self
             path: s/automation
@@ -205,7 +205,7 @@ stages:
         condition: in(dependencies.WaitForApproval.result, 'Succeeded', 'Skipped')
         timeoutInMinutes: 240
         pool:
-          name: Provisioning
+          name: Default
         steps:
           - checkout: self
             path: s/automation
@@ -330,7 +330,7 @@ stages:
         condition: in(dependencies.WaitForApproval.result, 'Succeeded', 'Skipped')
         timeoutInMinutes: 360
         pool:
-          name: Provisioning
+          name: Default
         steps:
           - checkout: self
             path: s/automation
@@ -441,7 +441,7 @@ stages:
         displayName: "Validate Cluster Health"
         timeoutInMinutes: 30
         pool:
-          name: Provisioning
+          name: Default
         steps:
           - checkout: self
             path: s/automation
