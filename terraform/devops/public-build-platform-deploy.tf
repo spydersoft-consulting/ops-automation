@@ -18,7 +18,7 @@ resource "azuredevops_build_definition" "platform-helm-deploy" {
 
   repository {
     branch_name           = "refs/heads/main"
-    service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
+    service_connection_id = azuredevops_serviceendpoint_github.spydersoft-consulting-app-auth.id # Github App Connection
     repo_type             = "GitHub"
     repo_id               = "spydersoft-consulting/platform-helm-config"
     yml_path              = ".devops/pipeline-main.yml"
