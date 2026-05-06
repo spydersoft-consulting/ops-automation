@@ -81,7 +81,11 @@ foreach ($repository in $json.repositories) {
         }
 
         $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($repository.repository)/tags/list"
-        $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object { New-Object "System.Management.Automation.SemanticVersion" $_ } | Sort-Object -descending | Select-Object -First 1
+        $prefix = if ($null -ne $repository.imagePrefix) { $repository.imagePrefix } else { "" }
+        $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object {
+            $t = $_; if ($prefix -and $t.StartsWith($prefix)) { $t = $t.Substring($prefix.Length) }
+            try { New-Object "System.Management.Automation.SemanticVersion" $t } catch { $null }
+        } | Where-Object { $null -ne $_ } | Sort-Object -descending | Select-Object -First 1
         $version = $versionV.ToString()
     }
 
