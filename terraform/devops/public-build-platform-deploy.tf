@@ -1,7 +1,7 @@
-resource "azuredevops_build_definition" "identity-helm-deploy" {
+resource "azuredevops_build_definition" "platform-helm-deploy" {
   project_id = azuredevops_project.public.id
-  name       = "identity-helm-deploy"
-  path       = "\\Identity"
+  name       = "platform-helm-deploy"
+  path       = "\\Platform"
 
   ci_trigger {
     use_yaml = true
@@ -20,7 +20,7 @@ resource "azuredevops_build_definition" "identity-helm-deploy" {
     branch_name           = "refs/heads/main"
     service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
     repo_type             = "GitHub"
-    repo_id               = "spyder007/id-helm-config"
+    repo_id               = "spydersoft-consulting/platform-helm-config"
     yml_path              = ".devops/pipeline-main.yml"
   }
 }
