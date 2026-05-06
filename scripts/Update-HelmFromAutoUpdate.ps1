@@ -75,14 +75,14 @@ foreach ($repository in $json.repositories) {
     }
     elseif ($type -eq "docker") {
         
-        $registryUrl = "https://registry.hub.docker.com/v2"
+        $registryUrl = "https://hub.docker.com/v2/repositories"
         if (-not [String]::IsNullOrWhiteSpace($repository.registryUrl)) {
             $registryUrl = $repository.registryUrl
         }
 
-        $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($repository.repository)/tags/list"
+        $registryData = Invoke-RestMethod -Uri "$($registryUrl)/$($repository.repository)/tags/?page_size=100"
         $prefix = if ($null -ne $repository.imagePrefix) { $repository.imagePrefix } else { "" }
-        $versionV = $registryData.tags | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object {
+        $versionV = $registryData.results.name | Where-Object { $_ -NotLike "*-ci*" -and $_ -NotLike "*latest*" -and $_ -NotLike "*rc*" } | ForEach-Object {
             $t = $_; if ($prefix -and $t.StartsWith($prefix)) { $t = $t.Substring($prefix.Length) }
             try { New-Object "System.Management.Automation.SemanticVersion" $t } catch { $null }
         } | Where-Object { $null -ne $_ } | Sort-Object -descending | Select-Object -First 1
