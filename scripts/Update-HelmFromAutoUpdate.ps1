@@ -56,22 +56,46 @@ foreach ($repository in $json.repositories) {
     }
 
     if ($type -eq "github") {
-        $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($repository.repository)/releases/latest"
+        if (-not [String]::IsNullOrWhiteSpace($repository.tagFilter)) {
+            $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$($repository.repository)/releases?per_page=100"
+            $prefix = if ($null -ne $repository.imagePrefix) { $repository.imagePrefix } else { "" }
+            $candidate = $releases | Where-Object { $_.prerelease -eq $false -and $_.tag_name -match $repository.tagFilter } | ForEach-Object {
+                $t = $_.tag_name
+                if ($prefix -and $t.StartsWith($prefix)) { $t = $t.Substring($prefix.Length) }
+                try { [PSCustomObject]@{ Tag = $_.tag_name; Version = $t; SemVer = New-Object "System.Management.Automation.SemanticVersion" $t } } catch { $null }
+            } | Where-Object { $null -ne $_ } | Sort-Object -Property SemVer -Descending | Select-Object -First 1
 
-        $version = $latest.tag_name
-
-        if ($latest.tag_name.Contains("beta") -or $latest.tag_name.Contains("alpha") -or $latest.tag_name.Contains("rc")) {
-            # Skip pre-releases
-            continue
+            if ($null -eq $candidate) {
+                Write-Host "No releases matched tagFilter '$($repository.tagFilter)' for $($repository.repository)"
+                continue
+            }
+            $version = $candidate.Version
+            $versionV = $candidate.SemVer
         }
+        else {
+            $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$($repository.repository)/releases/latest"
 
-        if ($null -ne $repository.imagePrefix) {
-            if ($version.StartsWith($repository.imagePrefix)) {
-                $version = $version.Substring($repository.imagePrefix.Length)
+            $version = $latest.tag_name
+
+            if ($latest.tag_name.Contains("beta") -or $latest.tag_name.Contains("alpha") -or $latest.tag_name.Contains("rc")) {
+                # Skip pre-releases
+                continue
+            }
+
+            if ($null -ne $repository.imagePrefix) {
+                if ($version.StartsWith($repository.imagePrefix)) {
+                    $version = $version.Substring($repository.imagePrefix.Length)
+                }
+            }
+
+            try {
+                $versionV = New-Object "System.Management.Automation.SemanticVersion" $version
+            }
+            catch {
+                Write-Host "Skipping $($repository.repository): tag '$version' is not a valid SemVer"
+                continue
             }
         }
-
-        $versionV = New-Object "System.Management.Automation.SemanticVersion" $version
     }
     elseif ($type -eq "docker") {
         
