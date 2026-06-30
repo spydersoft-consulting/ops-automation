@@ -18,7 +18,7 @@ data "vault_kv_secret_v2" "vault-app-role" {
 }
 data "vault_kv_secret_v2" "s3-backend" {
   mount = "secrets-infra"
-  name  = "minio/terraform-access"
+  name  = "garage/terraform-access"
 }
 
 data "vault_kv_secret_v2" "spydersoft-gh-token" {

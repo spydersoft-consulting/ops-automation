@@ -4,8 +4,20 @@
 provider "registry.opentofu.org/hashicorp/github" {
   version = "6.4.0"
   hashes = [
+    "h1:3JNFM7w0c/R02ZfcqCctCnCIYFz8QZpDV3ZGcI3i2u8=",
+    "h1:3K70kgmnhx7FQaRF+dTAXszUW+hfFcOtmd1NtB6GSvE=",
+    "h1:3Q0czEvrerJNRkqynYnNYfL049wLRKyzbA1XtC3coT0=",
+    "h1:5NjaH7y9lZcMMPn1Mto/qOsvwndnfDynrIFYcjdLYeY=",
+    "h1:B1q5+Ub1G3zJa9y474Fg40eo/N04/vOSeaf3dWaCG0I=",
+    "h1:YiGCvjr7R77HGTzw81legWicEHApVTli8O+ooDpLexE=",
+    "h1:bd6D6FE33I025CWvGeDYD3YUMGSevRp9B1FztiX59ns=",
+    "h1:iiGVjpFUi9tiVARLCqQQCqRg5IDw7ksUAG6XShJkUUs=",
+    "h1:iwBnrshz66aFzv6tdlkUGMdh8rMCGm66HnW0kHNRn3E=",
+    "h1:jTqf6ZTqWptnaQg7ye+TYQ2FKaeqFac6VkmBqSD4geE=",
     "h1:lvtFaM9YXwQdiTeYUXCrb4CgBhDj1kjlkwLMiwQypT0=",
     "h1:sJvuRMYWJ/ykZXTuoCuocHvx06hTwDVrXVVXq1814bw=",
+    "h1:su759ClNJKtCA0KjVy9qu8tQF0NPJESn6M8DC2a6hEU=",
+    "h1:wIqFAKCcFj3YGIb8FRyZ/xQacECixpw16lyW217skug=",
     "zh:00f431c2a2510efcb1115442dda5e90815bcb16e1a3301679ade0139fa963d3b",
     "zh:12a862f4317b3cb65682c1b687650cd91eeee99e63774bdcfa8bcfc64bad097b",
     "zh:226d5e09ff27f94cb9336089181d26f85cb30219b863a579597f2e107f37de49",
@@ -27,7 +39,15 @@ provider "registry.opentofu.org/hashicorp/github" {
 provider "registry.opentofu.org/hashicorp/vault" {
   version = "4.5.0"
   hashes = [
+    "h1:+wKs9hDeViWLWokhYBrGSs5vf6KwYIcXlgADm0Wbp04=",
     "h1:2zN1LdTCiEpE8QWTbIcA+SDIGBXI52mwFMmwupWjfhE=",
+    "h1:49u8YNrkfEbGf9qtx9ohtBNivqbCpTz1fWCPkRfEQ40=",
+    "h1:6RjXUlhC6fzx48z01DNU15GaX5HlO/vuJ4hDOyQop4w=",
+    "h1:H7q3pVXkgbqjgcox5bJyz011XnbPv7bxDvXWJi0VQe8=",
+    "h1:KWtz/9RwY80JLQ18SFh6AesSKwgzm8LDGfwMz0kLbAY=",
+    "h1:P9IYPk8lKQTDvNVxGKEBDEWgPAYEKsp0+lI3NUP6n1w=",
+    "h1:SSPnAjeUU+2IL74VNTQpe3gLJe1TK59syjvrCZ1fYII=",
+    "h1:UnWmYb5nIavWV5HIK7oHlkWJlNnjXZJ2A1dl4zk0qzY=",
     "h1:eYsZDIQRjo/AXdbHVTr5iTGERd/wJ4dx9ofAZQubMRw=",
     "zh:006189f781957a6128cfc71ea6e78015117dd8d618ca440a526feabf8168c708",
     "zh:01ea4b69af85ab3efaf07c94e716cfbea45c2c052fdfddbcf0194d28a8590d3f",
@@ -45,8 +65,20 @@ provider "registry.opentofu.org/hashicorp/vault" {
 provider "registry.opentofu.org/integrations/github" {
   version = "6.4.0"
   hashes = [
+    "h1:3JNFM7w0c/R02ZfcqCctCnCIYFz8QZpDV3ZGcI3i2u8=",
+    "h1:3K70kgmnhx7FQaRF+dTAXszUW+hfFcOtmd1NtB6GSvE=",
+    "h1:3Q0czEvrerJNRkqynYnNYfL049wLRKyzbA1XtC3coT0=",
+    "h1:5NjaH7y9lZcMMPn1Mto/qOsvwndnfDynrIFYcjdLYeY=",
+    "h1:B1q5+Ub1G3zJa9y474Fg40eo/N04/vOSeaf3dWaCG0I=",
+    "h1:YiGCvjr7R77HGTzw81legWicEHApVTli8O+ooDpLexE=",
+    "h1:bd6D6FE33I025CWvGeDYD3YUMGSevRp9B1FztiX59ns=",
+    "h1:iiGVjpFUi9tiVARLCqQQCqRg5IDw7ksUAG6XShJkUUs=",
+    "h1:iwBnrshz66aFzv6tdlkUGMdh8rMCGm66HnW0kHNRn3E=",
+    "h1:jTqf6ZTqWptnaQg7ye+TYQ2FKaeqFac6VkmBqSD4geE=",
     "h1:lvtFaM9YXwQdiTeYUXCrb4CgBhDj1kjlkwLMiwQypT0=",
     "h1:sJvuRMYWJ/ykZXTuoCuocHvx06hTwDVrXVVXq1814bw=",
+    "h1:su759ClNJKtCA0KjVy9qu8tQF0NPJESn6M8DC2a6hEU=",
+    "h1:wIqFAKCcFj3YGIb8FRyZ/xQacECixpw16lyW217skug=",
     "zh:00f431c2a2510efcb1115442dda5e90815bcb16e1a3301679ade0139fa963d3b",
     "zh:12a862f4317b3cb65682c1b687650cd91eeee99e63774bdcfa8bcfc64bad097b",
     "zh:226d5e09ff27f94cb9336089181d26f85cb30219b863a579597f2e107f37de49",

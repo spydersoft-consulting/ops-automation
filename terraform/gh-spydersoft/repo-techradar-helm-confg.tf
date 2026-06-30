@@ -29,10 +29,4 @@ resource "github_repository" "techradar_helm_config" {
       }
   }
 }
-
-
-import {
-  to = github_repository.techradar_helm_config
-  id = "techradar-helm-config" # The unique ID of the resource in GitHub
-}
     

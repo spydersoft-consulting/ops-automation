@@ -1,6 +1,8 @@
-resource "github_repository" "ops_prod_cluster" {
-  name                        = "ops-prod-cluster"
-  description                 = "Operations repository for Production Cluster"
+
+
+resource "github_repository" "pitstop_helm_config" {
+  name                        = "pitstop-helm-config"
+  description                 = ""
   allow_auto_merge            = false
   allow_merge_commit          = true
   allow_rebase_merge          = true
@@ -8,7 +10,7 @@ resource "github_repository" "ops_prod_cluster" {
   allow_update_branch         = false
   archived                    = false
   auto_init                   = false
-  delete_branch_on_merge      = false
+  delete_branch_on_merge      = true
   has_discussions             = false
   has_downloads               = true
   has_issues                  = true
@@ -16,16 +18,10 @@ resource "github_repository" "ops_prod_cluster" {
   has_wiki                    = true
   is_template                 = false
   topics                      = []
-  visibility                  = "public"
+  visibility                  = "private"
   vulnerability_alerts        = false
   web_commit_signoff_required = false
-
-  security_and_analysis {
-      secret_scanning {
-          status = "disabled"
-      }
-      secret_scanning_push_protection {
-          status = "disabled"
-      }
-  }
 }
+
+# No github_branch_protection resource: branch protection on private
+# repositories is not available on the org's free GitHub plan.

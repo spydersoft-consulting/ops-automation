@@ -1,6 +1,6 @@
-resource "github_repository" "react_runtime_config" {
-  name                        = "react-runtime-config"
-  description                 = "Provide a typesafe runtime configuration inside a react app"
+resource "github_repository" "pitstop_web" {
+  name                        = "pitstop-web"
+  description                 = ""
   allow_auto_merge            = false
   allow_merge_commit          = true
   allow_rebase_merge          = true
@@ -11,7 +11,7 @@ resource "github_repository" "react_runtime_config" {
   delete_branch_on_merge      = true
   has_discussions             = false
   has_downloads               = true
-  has_issues                  = false
+  has_issues                  = true
   has_projects                = true
   has_wiki                    = false
   is_template                 = false
@@ -30,8 +30,8 @@ resource "github_repository" "react_runtime_config" {
   }
 }
 
-resource "github_branch_protection" "react_runtime_config_main" {
-  repository_id = github_repository.react_runtime_config.node_id
+resource "github_branch_protection" "pitstop_web_main" {
+  repository_id = github_repository.pitstop_web.node_id
   pattern       = "main"
 
   allows_deletions                = false
@@ -41,20 +41,20 @@ resource "github_branch_protection" "react_runtime_config_main" {
   lock_branch                     = false
   require_conversation_resolution = true
   require_signed_commits          = false
-  required_linear_history         = true
+  required_linear_history         = false
 
   required_pull_request_reviews {
-    dismiss_stale_reviews           = false
+    dismiss_stale_reviews           = true
     dismissal_restrictions          = []
     pull_request_bypassers          = []
-    require_code_owner_reviews      = true
+    require_code_owner_reviews      = false
     require_last_push_approval      = false
     required_approving_review_count = 1
     restrict_dismissals             = false
   }
 
   required_status_checks {
-    contexts = []
-    strict   = true
+    contexts = ["pitstop-web", "SonarCloud Code Analysis"]
+    strict   = false
   }
 }
