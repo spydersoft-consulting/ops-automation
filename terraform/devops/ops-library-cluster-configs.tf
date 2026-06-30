@@ -10,11 +10,11 @@ resource "azuredevops_variable_group" "cluster-nonprod" {
     is_secret    = true
   }
 
-  variable {
-    name         = "node-token"
-    secret_value = data.vault_kv_secret_v2.k8-nonprod-node-token.data["token"]
-    is_secret    = true
-  }
+  # variable {
+  #   name         = "node-token"
+  #   secret_value = data.vault_kv_secret_v2.k8-nonprod-node-token.data["token"]
+  #   is_secret    = true
+  # }
 }
 
 resource "azuredevops_variable_group" "cluster-internal" {
@@ -29,11 +29,11 @@ resource "azuredevops_variable_group" "cluster-internal" {
     is_secret    = true
   }
 
-  variable {
-    name         = "node-token"
-    secret_value = data.vault_kv_secret_v2.k8-internal-node-token.data["token"]
-    is_secret    = true
-  }
+  # variable {
+  #   name         = "node-token"
+  #   secret_value = data.vault_kv_secret_v2.k8-internal-node-token.data["token"]
+  #   is_secret    = true
+  # }
 }
 
 resource "azuredevops_variable_group" "cluster-prod" {
@@ -48,9 +48,9 @@ resource "azuredevops_variable_group" "cluster-prod" {
     is_secret    = true
   }
 
-  variable {
-    name         = "node-token"
-    secret_value = data.vault_kv_secret_v2.k8-prod-node-token.data["token"]
-    is_secret    = true
-  }
+  # variable {
+  #   name         = "node-token"
+  #   secret_value = data.vault_kv_secret_v2.k8-prod-node-token.data["token"]
+  #   is_secret    = true
+  # }
 }
