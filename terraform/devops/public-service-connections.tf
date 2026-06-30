@@ -27,15 +27,6 @@ resource "azuredevops_serviceendpoint_sonarcloud" "sonarcloud-spydersoft" {
   description           = "Managed by Terraform"
 }
 
-resource "azuredevops_serviceendpoint_nuget" "spydersoft-develop" {
-  project_id            = azuredevops_project.public.id
-  feed_url              = "https://proget.mattgerega.com/nuget/develop/v3/index.json"
-  username              = data.vault_kv_secret_v2.proget-nuget.data["username"]
-  password              = data.vault_kv_secret_v2.proget-nuget.data["password"]
-  service_endpoint_name = "SpydersoftDevelop"
-  description           = "Managed by Terraform"
-}
-
 resource "azuredevops_serviceendpoint_nuget" "spydersoft-github" {
   project_id            = azuredevops_project.public.id
   feed_url              = data.vault_kv_secret_v2.github-nuget.data["feed_url"]
@@ -43,16 +34,6 @@ resource "azuredevops_serviceendpoint_nuget" "spydersoft-github" {
   password              = data.vault_kv_secret_v2.github-nuget.data["token"]
   service_endpoint_name = "SpydersoftGithub"
   description           = "Managed by Terraform"
-}
-
-resource "azuredevops_serviceendpoint_dockerregistry" "public-proget" {
-  project_id            = azuredevops_project.public.id
-  docker_registry       = "https://proget.mattgerega.com"
-  docker_username       = data.vault_kv_secret_v2.proget-docker.data["username"]
-  docker_password       = data.vault_kv_secret_v2.proget-docker.data["password"]
-  service_endpoint_name = "proget_docker"
-  description           = "Managed by Terraform"
-  registry_type         = "Others"
 }
 
 resource "azuredevops_serviceendpoint_dockerregistry" "public-github-spydersoft-docker" {
