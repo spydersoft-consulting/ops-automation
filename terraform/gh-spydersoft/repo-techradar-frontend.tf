@@ -6,7 +6,7 @@ resource "github_repository" "techradar_frontend" {
   allow_rebase_merge          = true
   allow_squash_merge          = true
   allow_update_branch         = false
-  archived                    = false
+  archived                    = true
   auto_init                   = false
   delete_branch_on_merge      = true
   has_discussions             = false
