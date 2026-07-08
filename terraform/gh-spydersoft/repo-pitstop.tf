@@ -60,13 +60,13 @@ resource "github_branch_protection" "pitstop_main" {
   }
 
   # Status check context name comes from the single ADO build definition in
-  # public-build-pitstop-monorepo.tf plus the combined SonarCloud project
+  # public-build-pitstop.tf plus the combined SonarCloud project
   # (spydersoft-consulting_pitstop -- must exist in SonarCloud, see
   # pitstop/.devops/pipeline-ci.yml's header comment) -- verify these
   # literal names against what GitHub actually shows after the first real
   # pipeline run before relying on this to gate merges.
   required_status_checks {
-    contexts = ["pitstop-monorepo", "SonarCloud Code Analysis"]
+    contexts = ["pitstop", "SonarCloud Code Analysis"]
     strict   = false
   }
 }
