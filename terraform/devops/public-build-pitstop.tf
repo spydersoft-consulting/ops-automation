@@ -2,9 +2,10 @@
 # solutions, publishes both images, and publishes the combined chart from a
 # single build number (see pitstop/.devops/pipeline-ci.yml).
 #
-# The old pitstop-api / pitstop-web build definitions (public-build-pitstop-api.tf,
-# public-build-pitstop-web.tf) are separate resources pointing at the old,
-# still-live repos -- remove those once pitstop-api/pitstop-web are archived.
+# The old pitstop-api / pitstop-web build definitions have been removed
+# (public-build-pitstop-api.tf, public-build-pitstop-web.tf) now that
+# pitstop-api/pitstop-web are archived -- see repo-pitstop-api.tf /
+# repo-pitstop-web.tf in the gh-spydersoft project.
 resource "azuredevops_build_definition" "pitstop" {
   project_id = azuredevops_project.public.id
   name       = "pitstop"
