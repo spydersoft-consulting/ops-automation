@@ -21,6 +21,6 @@ resource "azuredevops_build_definition" "techradar-helm-deploy" {
     service_connection_id = azuredevops_serviceendpoint_github.spydersoft-consulting-app-auth.id # Github App Connection
     repo_type             = "GitHub"
     repo_id               = "spydersoft-consulting/techradar-helm-config"
-    yml_path              = ".devops/pipeline-main.yml"
+    yml_path              = ".devops/pipeline-deploy.yml"
   }
 }
