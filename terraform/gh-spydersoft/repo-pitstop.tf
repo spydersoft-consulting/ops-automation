@@ -1,8 +1,7 @@
 # The new combined pitstop monorepo (src/api + src/web + charts/pitstop),
-# replacing pitstop-api and pitstop-web. Those two repos' resources
-# (pitstop_api / pitstop_web below in repo-pitstop-api.tf / repo-pitstop-web.tf)
-# are intentionally left untouched here -- they get archived on GitHub
-# manually once the new repo is verified, not torn down by this change.
+# replacing pitstop-api and pitstop-web. Those two repos are now archived
+# (repo-pitstop-api.tf / repo-pitstop-web.tf) and their build definitions
+# removed (see public-build-pitstop.tf in the devops project).
 
 resource "github_repository" "pitstop" {
   name                        = "pitstop"
