@@ -23,3 +23,13 @@ resource "azuredevops_check_approval" "production" {
   approvers             = ["7d259c26-98a2-42e0-825a-fa9020ccb00f"] # Matt Gerega
   timeout               = 43200
 }
+
+# The apply that would have created azuredevops_check_approval.production
+# failed: "Approvals check already exists" -- an approval check (id 5) was
+# already configured on the production Environment manually back in 2021,
+# never terraform-managed, same approver/timeout as what's defined above.
+# Import it instead of fighting to recreate it.
+import {
+  to = azuredevops_check_approval.production
+  id = "97a7b4ed-e5c1-4999-b697-36114643d28c/5"
+}
