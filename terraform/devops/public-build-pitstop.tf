@@ -1,14 +1,13 @@
-# Transitional name (pitstop-monorepo) to avoid colliding with the existing
-# pitstop-api / pitstop-web build definitions, which still point at the old
-# repos and are left running until those repos are archived. Rename to
-# "pitstop" once the old build definitions and repos are removed.
-#
 # One build definition for the whole repo: pipeline-ci.yml builds both
 # solutions, publishes both images, and publishes the combined chart from a
 # single build number (see pitstop/.devops/pipeline-ci.yml).
-resource "azuredevops_build_definition" "pitstop-monorepo" {
+#
+# The old pitstop-api / pitstop-web build definitions (public-build-pitstop-api.tf,
+# public-build-pitstop-web.tf) are separate resources pointing at the old,
+# still-live repos -- remove those once pitstop-api/pitstop-web are archived.
+resource "azuredevops_build_definition" "pitstop" {
   project_id = azuredevops_project.public.id
-  name       = "pitstop-monorepo"
+  name       = "pitstop"
   path       = "\\Pit Stop"
 
   ci_trigger {
