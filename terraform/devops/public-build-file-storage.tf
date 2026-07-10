@@ -1,7 +1,17 @@
-resource "azuredevops_build_definition" "file-storage" {
+# Renamed from "file-storage" / "file-storage-build" (and moved out of the
+# "\Identity" ADO folder, a copy-paste leftover) to match the naming
+# convention used by the other single-build-definition apps (audit,
+# pitstop). moved block preserves the existing build definition's ID/history
+# instead of destroying and recreating it.
+moved {
+  from = azuredevops_build_definition.file-storage
+  to   = azuredevops_build_definition.filestore_api
+}
+
+resource "azuredevops_build_definition" "filestore_api" {
   project_id = azuredevops_project.public.id
-  name       = "file-storage-build"
-  path       = "\\Identity"
+  name       = "filestore-api"
+  path       = "\\File Storage"
 
   ci_trigger {
     use_yaml = true
