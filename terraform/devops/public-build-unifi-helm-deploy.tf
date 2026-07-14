@@ -21,6 +21,6 @@ resource "azuredevops_build_definition" "unifi-helm-deploy" {
     service_connection_id = azuredevops_serviceendpoint_github.spyder007-app-auth.id # Github App Connection
     repo_type             = "GitHub"
     repo_id               = "spyder007/ha-helm-config"
-    yml_path              = ".devops/pipeline-main.yml"
+    yml_path              = ".devops/pipeline-deploy.yml"
   }
 }
