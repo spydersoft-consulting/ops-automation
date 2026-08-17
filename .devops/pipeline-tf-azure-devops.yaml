@@ -19,7 +19,7 @@ pr:
 
 # Vault secrets can change when terraform-azuread runs (e.g. gerega-lab SP
 # password rotation), so kick off this build whenever terraform-azuread
-# completes on main to keep the ADO variable groups it feeds in sync.
+# completes on main to keep the ADO variable groups it feeds in sync. 
 resources:
   pipelines:
     - pipeline: terraform-azuread
