@@ -1,0 +1,43 @@
+parameters:
+  - name: variableGroupName
+    type: string
+  - name: tofuDirectory
+    type: string
+
+steps:
+  - pwsh: |
+      $ErrorActionPreference = "Stop"
+
+      az extension add --name azure-devops --only-show-errors 2>$null
+
+      $env:AZURE_DEVOPS_EXT_PAT = "$(AZDO_PERSONAL_ACCESS_TOKEN)"
+      $org = "$(AZDO_ORG_SERVICE_URL)"
+      $project = "$(System.TeamProject)"
+      $groupName = "${{ parameters.variableGroupName }}"
+
+      $groupId = az pipelines variable-group list --organization $org --project $project --group-name $groupName --query "[0].id" -o tsv
+      if (-not $groupId) {
+        Write-Error "Variable group '$groupName' not found in project '$project'."
+        exit 1
+      }
+
+      $outputs = tofu output -json | ConvertFrom-Json
+
+      foreach ($varName in @("ARM_CLIENT_ID", "ARM_CLIENT_SECRET", "ARM_TENANT_ID")) {
+        if ($outputs.PSObject.Properties.Name -notcontains $varName) {
+          continue
+        }
+        $value = $outputs.$varName.value
+        $isSecret = if ($varName -eq "ARM_CLIENT_SECRET") { "true" } else { "false" }
+        az pipelines variable-group variable update --organization $org --project $project --group-id $groupId --name $varName --value "$value" --secret $isSecret --output none
+        Write-Host "Synced $varName to variable group '$groupName'"
+      }
+    displayName: "Sync Outputs to Variable Group"
+    workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+    env:
+      # tofu output needs backend (state) access, not provider auth
+      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+      AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+      AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+      AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)

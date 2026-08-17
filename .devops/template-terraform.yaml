@@ -16,6 +16,9 @@ parameters:
   - name: includeAzureDevopsVariables
     type: boolean
     default: false
+  - name: syncOutputsToVariableGroup
+    type: string
+    default: ""
 
 
 stages:
@@ -160,6 +163,11 @@ stages:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - ${{ if ne(parameters.syncOutputsToVariableGroup, '') }}:
+            - template: template-sync-outputs.yaml
+              parameters:
+                variableGroupName: "${{ parameters.syncOutputsToVariableGroup }}"
+                tofuDirectory: "${{ parameters.tofuDirectory }}"
 
   - stage: applyTofuManual
     displayName: "Apply Tofu - Manual"
@@ -228,3 +236,8 @@ stages:
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
                 ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - ${{ if ne(parameters.syncOutputsToVariableGroup, '') }}:
+            - template: template-sync-outputs.yaml
+              parameters:
+                variableGroupName: "${{ parameters.syncOutputsToVariableGroup }}"
+                tofuDirectory: "${{ parameters.tofuDirectory }}"

@@ -16,10 +16,9 @@ resource "vault_kv_secret_v2" "azuread-tf-sp" {
   name  = "azure/service-principals/terraform-azuread-sp"
   data_json = jsonencode(
     {
-      appId              = azuread_service_principal.tf-azuread.client_id
-      tenant_id          = var.azure_directory_id
-      password           = local.tf_azuread_primary
-      password_secondary = local.tf_azuread_secondary
+      appId     = azuread_service_principal.tf-azuread.client_id
+      tenant_id = var.azure_directory_id
+      password  = azuread_service_principal_password.tf-azuread.value
     }
   )
 }

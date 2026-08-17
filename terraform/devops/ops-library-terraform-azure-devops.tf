@@ -1,8 +1,10 @@
 resource "azuredevops_variable_group" "terraform-azuredevops" {
-  project_id   = azuredevops_project.ops.id
-  name         = "terraform-azure-devops"
-  description  = "[terraform-managed] Azure DevOps Credentials"
-  allow_access = false
+  project_id  = azuredevops_project.ops.id
+  name        = "terraform-azure-devops"
+  description = "[terraform-managed] Azure DevOps Credentials"
+  # terraform-azuread also needs this to sync outputs into a variable group
+  # after apply; see .devops/template-sync-outputs.yaml.
+  allow_access = true
 
   variable {
     name  = "AZDO_ORG_SERVICE_URL"

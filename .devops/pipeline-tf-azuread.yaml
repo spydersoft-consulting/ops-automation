@@ -29,6 +29,7 @@ variables:
   - group: "terraform-azuread"
   - group: "terraform-s3-backend"
   - group: "terraform-hcvault"
+  - group: "terraform-azure-devops"
 
 extends:
   template: template-terraform.yaml
@@ -36,3 +37,9 @@ extends:
     tofuDirectory: "terraform/azuread"
     addVaultAuthentication: true
     planArguments: "-var-file config/gerega.tfvars"
+    # terraform-azuread-sp authenticates this pipeline via the
+    # "terraform-azuread" variable group, and this state manages that same
+    # SP's password. Push the current value back into that variable group
+    # right after apply so the pipeline can never authenticate with a stale
+    # secret, regardless of what changed it (see sp-tf-azuread.tf).
+    syncOutputsToVariableGroup: "terraform-azuread"

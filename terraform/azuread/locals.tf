@@ -8,18 +8,6 @@ locals {
   # The password with the LATER next-rotation was rotated more recently
   # and has the longest remaining validity.
 
-  # terraform-azuread SP
-  tf_azuread_primary = (
-    timecmp(time_rotating.tf-azuread-a.rotation_rfc3339, time_rotating.tf-azuread-b.rotation_rfc3339) >= 0
-    ? azuread_service_principal_password.tf-azuread-a.value
-    : azuread_service_principal_password.tf-azuread-b.value
-  )
-  tf_azuread_secondary = (
-    timecmp(time_rotating.tf-azuread-a.rotation_rfc3339, time_rotating.tf-azuread-b.rotation_rfc3339) >= 0
-    ? azuread_service_principal_password.tf-azuread-b.value
-    : azuread_service_principal_password.tf-azuread-a.value
-  )
-
   # terraform-gerega-lab SP
   tf_geregalab_primary = (
     timecmp(time_rotating.tf-gerega-lab-a.rotation_rfc3339, time_rotating.tf-gerega-lab-b.rotation_rfc3339) >= 0
