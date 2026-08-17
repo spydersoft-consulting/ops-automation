@@ -1,6 +1,11 @@
 parameters:
-  - name: variableGroupName
-    type: string
+  # List of { variableGroupName: string, outputPrefix: string }. For each
+  # entry, pushes tofu outputs named "<outputPrefix>ARM_CLIENT_ID" etc. into
+  # the ARM_CLIENT_ID/ARM_CLIENT_SECRET/ARM_TENANT_ID variables of the named
+  # variable group. Use an empty outputPrefix to read the bare ARM_* outputs.
+  - name: syncTargets
+    type: object
+    default: []
   - name: tofuDirectory
     type: string
 
@@ -13,26 +18,32 @@ steps:
       $env:AZURE_DEVOPS_EXT_PAT = "$(AZDO_PERSONAL_ACCESS_TOKEN)"
       $org = "$(AZDO_ORG_SERVICE_URL)"
       $project = "$(System.TeamProject)"
-      $groupName = "${{ parameters.variableGroupName }}"
-
-      $groupId = az pipelines variable-group list --organization $org --project $project --group-name $groupName --query "[0].id" -o tsv
-      if (-not $groupId) {
-        Write-Error "Variable group '$groupName' not found in project '$project'."
-        exit 1
-      }
 
       $outputs = tofu output -json | ConvertFrom-Json
+      $targets = '${{ convertToJson(parameters.syncTargets) }}' | ConvertFrom-Json
 
-      foreach ($varName in @("ARM_CLIENT_ID", "ARM_CLIENT_SECRET", "ARM_TENANT_ID")) {
-        if ($outputs.PSObject.Properties.Name -notcontains $varName) {
-          continue
+      foreach ($target in $targets) {
+        $groupName = $target.variableGroupName
+        $prefix = $target.outputPrefix
+
+        $groupId = az pipelines variable-group list --organization $org --project $project --group-name $groupName --query "[0].id" -o tsv
+        if (-not $groupId) {
+          Write-Error "Variable group '$groupName' not found in project '$project'."
+          exit 1
         }
-        $value = $outputs.$varName.value
-        $isSecret = if ($varName -eq "ARM_CLIENT_SECRET") { "true" } else { "false" }
-        az pipelines variable-group variable update --organization $org --project $project --group-id $groupId --name $varName --value "$value" --secret $isSecret --output none
-        Write-Host "Synced $varName to variable group '$groupName'"
+
+        foreach ($varName in @("ARM_CLIENT_ID", "ARM_CLIENT_SECRET", "ARM_TENANT_ID")) {
+          $outputName = "$prefix$varName"
+          if ($outputs.PSObject.Properties.Name -notcontains $outputName) {
+            continue
+          }
+          $value = $outputs.$outputName.value
+          $isSecret = if ($varName -eq "ARM_CLIENT_SECRET") { "true" } else { "false" }
+          az pipelines variable-group variable update --organization $org --project $project --group-id $groupId --name $varName --value "$value" --secret $isSecret --output none
+          Write-Host "Synced $outputName to $varName in variable group '$groupName'"
+        }
       }
-    displayName: "Sync Outputs to Variable Group"
+    displayName: "Sync Outputs to Variable Groups"
     workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
     env:
       # tofu output needs backend (state) access, not provider auth

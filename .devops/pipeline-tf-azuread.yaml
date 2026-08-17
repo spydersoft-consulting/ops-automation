@@ -37,9 +37,13 @@ extends:
     tofuDirectory: "terraform/azuread"
     addVaultAuthentication: true
     planArguments: "-var-file config/gerega.tfvars"
-    # terraform-azuread-sp authenticates this pipeline via the
-    # "terraform-azuread" variable group, and this state manages that same
-    # SP's password. Push the current value back into that variable group
-    # right after apply so the pipeline can never authenticate with a stale
-    # secret, regardless of what changed it (see sp-tf-azuread.tf).
-    syncOutputsToVariableGroup: "terraform-azuread"
+    # This state manages the SPs that authenticate both this pipeline
+    # (terraform-azuread-sp, see sp-tf-azuread.tf) and terraform-geregalab
+    # (terraform-gerega-lab, which still auto-rotates). Push current values
+    # back into both variable groups right after apply so neither pipeline
+    # can end up authenticating with a stale secret.
+    syncTargets:
+      - variableGroupName: "terraform-azuread"
+        outputPrefix: ""
+      - variableGroupName: "terraform-gerega-lab"
+        outputPrefix: "GEREGALAB_"
