@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    azurerm = {
+    github = {
       source = "integrations/github"
     }
     vault = {
@@ -24,5 +24,5 @@ provider "vault" {
 
 provider "github" {
   owner = "spydersoft-consulting"
-  #token = var.github_token
+  token = var.github_token
 }
