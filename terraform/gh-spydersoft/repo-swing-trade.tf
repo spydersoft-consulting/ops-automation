@@ -1,4 +1,4 @@
-resource "github_repository" "swing-trade" {
+resource "github_repository" "swing_trade" {
   name                        = "swing-trade"
   description                 = "swing-trade - Simple Swing Trading Tool"
   allow_auto_merge            = false
@@ -30,7 +30,7 @@ resource "github_repository" "swing-trade" {
   }
 }
 
-resource "github_branch_protection" "swing-trade_main" {
+resource "github_branch_protection" "swing_trade_main" {
   repository_id = github_repository.swing-trade.node_id
   pattern       = "main"
 
@@ -60,7 +60,7 @@ resource "github_branch_protection" "swing-trade_main" {
   # literal names against what GitHub actually shows after the first real
   # pipeline run before relying on this to gate merges.
   required_status_checks {
-    contexts = ["swing-trade", "SonarCloud Code Analysis"]
+    contexts = ["swing_trade", "SonarCloud Code Analysis"]
     strict   = false
   }
 }
