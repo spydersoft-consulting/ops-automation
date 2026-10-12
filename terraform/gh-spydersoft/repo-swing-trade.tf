@@ -31,7 +31,7 @@ resource "github_repository" "swing_trade" {
 }
 
 resource "github_branch_protection" "swing_trade_main" {
-  repository_id = github_repository.swing-trade.node_id
+  repository_id = github_repository.swing_trade.node_id
   pattern       = "main"
 
   allows_deletions                = false
