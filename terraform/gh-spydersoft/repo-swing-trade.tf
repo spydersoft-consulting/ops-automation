@@ -1,3 +1,8 @@
+moved {
+  from = github_repository.swing-trade
+  to   = github_repository.swing_trade
+}
+
 resource "github_repository" "swing_trade" {
   name                        = "swing-trade"
   description                 = "swing-trade - Simple Swing Trading Tool"
