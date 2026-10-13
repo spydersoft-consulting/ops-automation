@@ -54,3 +54,5 @@ terraform/**/tf.plan
 **/.vscode/*
 **/plan.json
 **/.env.*
+# Providers installed from GitHub releases by the pipeline (template-install-local-providers.yaml)
+terraform/**/terraform.d/

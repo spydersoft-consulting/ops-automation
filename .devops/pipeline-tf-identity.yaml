@@ -1,0 +1,52 @@
+# Terraform for the identity server (clients, API resources, identity resources
+# and scopes), applied to test first and then production. Production always
+# waits for a manual approval before it is applied.
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - terraform/identity/*
+      - .devops/pipeline-tf-identity.yaml
+      - .devops/template-terraform.yaml
+      - .devops/template-terraform-stages.yaml
+      - .devops/template-install-local-providers.yaml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - terraform/identity/*
+      - .devops/pipeline-tf-identity.yaml
+      - .devops/template-terraform.yaml
+      - .devops/template-terraform-stages.yaml
+      - .devops/template-install-local-providers.yaml
+
+variables:
+  - group: "terraform-s3-backend"
+  - group: "terraform-hcvault"
+
+extends:
+  template: template-terraform.yaml
+  parameters:
+    tofuDirectory: "terraform/identity"
+    addVaultAuthentication: true
+    # Keep in step with the version constraint in terraform/identity/providers.tf.
+    localProviders:
+      - repository: spydersoft-consulting/terraform-provider-spydersoft-identity
+        namespace: spydersoft-consulting
+        type: spydersoft-identity
+        version: "0.1.0"
+    environments:
+      - name: test
+        backendKey: identity/test/terraform.tfstate
+        planArguments: "-var-file environments/test.tfvars"
+      - name: production
+        after: test
+        backendKey: identity/production/terraform.tfstate
+        planArguments: "-var-file environments/production.tfvars"
+        requireApproval: true
