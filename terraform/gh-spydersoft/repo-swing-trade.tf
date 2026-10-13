@@ -65,7 +65,7 @@ resource "github_branch_protection" "swing_trade_main" {
   # literal names against what GitHub actually shows after the first real
   # pipeline run before relying on this to gate merges.
   required_status_checks {
-    contexts = ["swing_trade", "SonarCloud Code Analysis"]
+    contexts = ["swing-trade", "SonarCloud Code Analysis"]
     strict   = false
   }
 }
