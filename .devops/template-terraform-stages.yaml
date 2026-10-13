@@ -1,0 +1,334 @@
+# Plan / apply stages for ONE Terraform state. Used directly by
+# template-terraform.yaml (once per environment). Stage names are
+# "planTofu", "applyTofuAuto" and "applyTofuManual" followed by stageSuffix, so
+# several instances can live in one pipeline.
+parameters:
+  - name: tofuDirectory
+    type: string
+  - name: planArguments
+    type: string
+    default: ""
+  # Extra arguments for "tofu init" (for example -backend-config="key=...").
+  # When set, init also runs with -reconfigure so a reused agent workspace can
+  # switch between state files.
+  - name: initArguments
+    type: string
+    default: ""
+  - name: addVaultAuthentication
+    type: boolean
+    default: false
+  - name: addGithubToken
+    type: boolean
+    default: false
+  - name: artifactName
+    type: string
+    default: "terraform-plan"
+  - name: includeAzureDevopsVariables
+    type: boolean
+    default: false
+  # List of { variableGroupName: string, outputPrefix: string } - see
+  # template-sync-outputs.yaml
+  - name: syncTargets
+    type: object
+    default: []
+  # Providers that are not in a registry and are installed from a GitHub
+  # release before init - see template-install-local-providers.yaml
+  - name: localProviders
+    type: object
+    default: []
+  # Appended to every stage name ("" or "_test", "_production", ...).
+  - name: stageSuffix
+    type: string
+    default: ""
+  # Shown in stage display names, e.g. " (test)".
+  - name: displayNameSuffix
+    type: string
+    default: ""
+  # stageSuffix of the environment that must be fully applied before this
+  # one is planned. Empty means this is the first (or only) environment.
+  - name: previousStageSuffix
+    type: string
+    default: ""
+  # Always wait for a manual approval before applying, even when the plan has
+  # no destructive changes.
+  - name: requireApproval
+    type: boolean
+    default: false
+
+stages:
+  - stage: planTofu${{ parameters.stageSuffix }}
+    displayName: "Plan Tofu${{ parameters.displayNameSuffix }}"
+    ${{ if ne(parameters.previousStageSuffix, '') }}:
+      dependsOn:
+        - planTofu${{ parameters.previousStageSuffix }}
+        - applyTofuAuto${{ parameters.previousStageSuffix }}
+        - applyTofuManual${{ parameters.previousStageSuffix }}
+      # Skipped apply stages (no changes, or a PR build) must not block the
+      # next environment; failed or cancelled ones must.
+      condition: and(
+        in(dependencies.planTofu${{ parameters.previousStageSuffix }}.result, 'Succeeded'),
+        in(dependencies.applyTofuAuto${{ parameters.previousStageSuffix }}.result, 'Succeeded', 'Skipped'),
+        in(dependencies.applyTofuManual${{ parameters.previousStageSuffix }}.result, 'Succeeded', 'Skipped'))
+    jobs:
+      - job: planTofu
+        displayName: Tofu
+        pool:
+          name: Default
+        steps:
+          - ${{ if gt(length(parameters.localProviders), 0) }}:
+            - template: template-install-local-providers.yaml
+              parameters:
+                providers: ${{ parameters.localProviders }}
+                tofuDirectory: ${{ parameters.tofuDirectory }}
+          - pwsh: |
+              # A backend key switches the state file, so re-initialise even if
+              # a previous environment left a .terraform directory behind.
+              $initArguments = '${{ parameters.initArguments }}'
+              if ($initArguments) { $initArguments += ' -reconfigure' }
+              Invoke-Expression "tofu init $initArguments"
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            displayName: "Initialize"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          - pwsh: |
+
+              $additionalArgs = "";
+              $addVaultAuthentication = [System.Boolean]::Parse("${{ parameters.addVaultAuthentication }}")
+              $addGithubToken = [System.Boolean]::Parse("${{ parameters.addGithubToken }}")
+              if ($addVaultAuthentication) {
+                $additionalArgs = "-var vault_approle_role_id=$(vault-app-role-id) -var vault_approle_secret_id=$(vault-app-role-secret-id)"
+              }
+
+              if ($addGithubToken) {
+               $additionalArgs += " -var github_token=$(GITHUB_TOKEN)"
+              }
+
+              Write-Host "Args = $additionalArgs"
+              Invoke-Expression "tofu plan ${{ parameters.planArguments }} $additionalArgs -out tf.plan -detailed-exitcode"
+              $exitCode = $LASTEXITCODE
+
+              Write-Host "Tofu Exit Code = $exitCode"
+
+              $changes = false;
+              if ($exitCode -eq 2) {
+                Write-Host "Changes detected"
+                $changes = true;
+                tofu show -json tf.plan > plan.json
+                $plan = get-content -raw plan.json | convertfrom-json
+                $hasDestructiveChanges = ($plan.resource_changes | ? { $_.change.actions -contains "delete" } | Measure).Count -gt 0
+
+                if ($hasDestructiveChanges) {
+                  "##vso[task.logissue type=warning]Changes with destroy detected, pipeline will require a manual approval to proceed"
+                  Write-Host "##vso[task.setvariable variable=HAS_DESTROY_CHANGES;isOutput=true]true"
+                }
+                else {
+                  echo "##vso[task.logissue type=warning]Changes with no destroys detected, it is safe for the pipeline to proceed automatically"
+                  Write-Host "##vso[task.setvariable variable=HAS_CHANGES_ONLY;isOutput=true]true"
+                }
+              }
+              elseif ($exitCode -eq 1) {
+                Write-Host "Errors during terraform."
+                exit 1
+              }
+
+              # One folder per environment so plans never leak between them.
+              $planDir = "$(Build.ArtifactStagingDirectory)/plan${{ parameters.stageSuffix }}"
+              New-Item -ItemType Directory -Force $planDir | Out-Null
+              tofu show tf.plan -no-color > "$planDir/terraform-plan.txt"
+              Copy-Item tf.plan "$planDir/tf.plan"
+            displayName: "Plan"
+            name: tofuPlan
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          - publish: $(Build.ArtifactStagingDirectory)/plan${{ parameters.stageSuffix }}
+            artifact: ${{ parameters.artifactName }}${{ parameters.stageSuffix }}
+            displayName: "Publish Tofu Plan"
+
+  - stage: applyTofuAuto${{ parameters.stageSuffix }}
+    displayName: "Apply Tofu - Auto${{ parameters.displayNameSuffix }}"
+    dependsOn: planTofu${{ parameters.stageSuffix }}
+    # Never runs for environments that require approval: those go through the
+    # manual stage below even when the plan has no destroys.
+    condition: and
+        (
+          succeeded(),
+          and (
+            eq('${{ parameters.requireApproval }}', 'False'),
+            and (
+              eq(dependencies.planTofu${{ parameters.stageSuffix }}.outputs['planTofu.tofuPlan.HAS_CHANGES_ONLY'], 'true'),
+              and(
+                eq(variables['Build.SourceBranchName'], 'main'),
+                ne(variables['Build.Reason'], 'PullRequest')
+              )
+            )
+          )
+        )
+    jobs:
+      - job: applyTofu
+        displayName: Apply Tofu
+        pool:
+          name: Default
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "current"
+              artifactName: "${{ parameters.artifactName }}${{ parameters.stageSuffix }}"
+              targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}${{ parameters.stageSuffix }}"
+          - ${{ if gt(length(parameters.localProviders), 0) }}:
+            - template: template-install-local-providers.yaml
+              parameters:
+                providers: ${{ parameters.localProviders }}
+                tofuDirectory: ${{ parameters.tofuDirectory }}
+          - pwsh: |
+              # A backend key switches the state file, so re-initialise even if
+              # a previous environment left a .terraform directory behind.
+              $initArguments = '${{ parameters.initArguments }}'
+              if ($initArguments) { $initArguments += ' -reconfigure' }
+              Invoke-Expression "tofu init $initArguments"
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            displayName: "Initialize"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - pwsh: |
+              tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}${{ parameters.stageSuffix }}/tf.plan
+            displayName: "Apply"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - ${{ if gt(length(parameters.syncTargets), 0) }}:
+            - template: template-sync-outputs.yaml
+              parameters:
+                syncTargets: ${{ parameters.syncTargets }}
+                tofuDirectory: "${{ parameters.tofuDirectory }}"
+
+  - stage: applyTofuManual${{ parameters.stageSuffix }}
+    displayName: "Apply Tofu - Manual${{ parameters.displayNameSuffix }}"
+    dependsOn: planTofu${{ parameters.stageSuffix }}
+    # Runs for destructive plans, and for every plan with changes when
+    # requireApproval is set.
+    condition: and
+        (
+          succeeded(),
+          and (
+            or (
+              eq(dependencies.planTofu${{ parameters.stageSuffix }}.outputs['planTofu.tofuPlan.HAS_DESTROY_CHANGES'], 'true'),
+              and (
+                eq('${{ parameters.requireApproval }}', 'True'),
+                eq(dependencies.planTofu${{ parameters.stageSuffix }}.outputs['planTofu.tofuPlan.HAS_CHANGES_ONLY'], 'true')
+              )
+            ),
+            and(
+              eq(variables['Build.SourceBranchName'], 'main'),
+              ne(variables['Build.Reason'], 'PullRequest')
+            )
+          )
+        )
+    jobs:
+      - job: "waitForValidation"
+        displayName: "Wait > Wait for manual appoval"
+        pool: "server"
+        timeoutInMinutes: "4320" # job times out in 3 days
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: "1440" # task times out in 1 day
+            inputs:
+              notifyUsers: ""
+              instructions: "Review the Terraform plan${{ parameters.displayNameSuffix }} before approving: this environment requires approval, or resources are being destroyed or costs are increasing a lot."
+              onTimeout: "reject"
+      - job: applyTofu
+        dependsOn: "waitForValidation"
+        displayName: Apply Tofu
+        pool:
+          name: Default
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "current"
+              artifactName: "${{ parameters.artifactName }}${{ parameters.stageSuffix }}"
+              targetPath: "$(Pipeline.Workspace)/${{ parameters.artifactName }}${{ parameters.stageSuffix }}"
+          - ${{ if gt(length(parameters.localProviders), 0) }}:
+            - template: template-install-local-providers.yaml
+              parameters:
+                providers: ${{ parameters.localProviders }}
+                tofuDirectory: ${{ parameters.tofuDirectory }}
+          - pwsh: |
+              # A backend key switches the state file, so re-initialise even if
+              # a previous environment left a .terraform directory behind.
+              $initArguments = '${{ parameters.initArguments }}'
+              if ($initArguments) { $initArguments += ' -reconfigure' }
+              Invoke-Expression "tofu init $initArguments"
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            displayName: "Initialize"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - pwsh: |
+              tofu apply -auto-approve $(Pipeline.Workspace)/${{ parameters.artifactName }}${{ parameters.stageSuffix }}/tf.plan
+            displayName: "Apply"
+            workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_ENDPOINT_URL_S3: $(AWS_ENDPOINT_URL_S3)
+              ${{ if eq(parameters.includeAzureDevopsVariables, true) }}:
+                AZDO_PERSONAL_ACCESS_TOKEN: $(AZDO_PERSONAL_ACCESS_TOKEN)
+                AZDO_ORG_SERVICE_URL: $(AZDO_ORG_SERVICE_URL)
+              ${{ else }}:
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+          - ${{ if gt(length(parameters.syncTargets), 0) }}:
+            - template: template-sync-outputs.yaml
+              parameters:
+                syncTargets: ${{ parameters.syncTargets }}
+                tofuDirectory: "${{ parameters.tofuDirectory }}"

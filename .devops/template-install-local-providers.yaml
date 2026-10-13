@@ -1,0 +1,76 @@
+# Installs providers that are published as GitHub releases only (not in any
+# registry) into OpenTofu's implied local mirror, terraform.d/plugins in the
+# working directory. "tofu init" then finds them without any CLI configuration;
+# every other provider still comes from the registry.
+parameters:
+  # List of:
+  #   repository: GitHub "owner/name", e.g. spydersoft-consulting/terraform-provider-spydersoft-identity
+  #   namespace:  namespace in the provider source address (spydersoft-consulting)
+  #   type:       provider type in the source address (spydersoft-identity)
+  #   version:    release version without the leading "v" (0.1.0)
+  # The source address in the Terraform code must be
+  # "<namespace>/<type>" with a matching version constraint.
+  - name: providers
+    type: object
+    default: []
+  - name: tofuDirectory
+    type: string
+  # Registry host the source address resolves to ("registry.opentofu.org" for
+  # tofu, "registry.terraform.io" for terraform).
+  - name: registryHost
+    type: string
+    default: registry.opentofu.org
+
+steps:
+  - pwsh: |
+      $ErrorActionPreference = "Stop"
+
+      $providers = '${{ convertToJson(parameters.providers) }}' | ConvertFrom-Json
+
+      $os = if ($IsWindows) { "windows" } elseif ($IsMacOS) { "darwin" } else { "linux" }
+      $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture) {
+        "X64"   { "amd64" }
+        "Arm64" { "arm64" }
+        "X86"   { "386" }
+        "Arm"   { "arm" }
+        default { throw "Unsupported architecture" }
+      }
+
+      foreach ($p in $providers) {
+        $name = "terraform-provider-$($p.type)"
+        $zip = "$($name)_$($p.version)_$($os)_$($arch).zip"
+        $baseUrl = "https://github.com/$($p.repository)/releases/download/v$($p.version)"
+        $target = Join-Path (Get-Location) "terraform.d/plugins/${{ parameters.registryHost }}/$($p.namespace)/$($p.type)/$($p.version)/$($os)_$($arch)"
+
+        if (Test-Path $target) { Remove-Item -Recurse -Force $target }
+        New-Item -ItemType Directory -Force $target | Out-Null
+
+        $download = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Force $download | Out-Null
+        try {
+          Write-Host "Downloading $($p.repository) v$($p.version) ($os/$arch)"
+          Invoke-WebRequest -Uri "$baseUrl/$zip" -OutFile (Join-Path $download $zip)
+          Invoke-WebRequest -Uri "$baseUrl/$($name)_$($p.version)_SHA256SUMS" -OutFile (Join-Path $download "SHA256SUMS")
+
+          # Fail closed: the archive must match the published checksum.
+          $expected = (Get-Content (Join-Path $download "SHA256SUMS") |
+            Where-Object { $_ -match "\s$([regex]::Escape($zip))$" } |
+            Select-Object -First 1) -split "\s+" | Select-Object -First 1
+          if (-not $expected) { throw "No checksum for $zip in SHA256SUMS" }
+          $actual = (Get-FileHash -Algorithm SHA256 (Join-Path $download $zip)).Hash
+          if ($actual -ne $expected.ToUpper()) {
+            throw "Checksum mismatch for $zip (expected $expected, got $actual)"
+          }
+
+          Expand-Archive -Path (Join-Path $download $zip) -DestinationPath $target -Force
+          if (-not $IsWindows) {
+            Get-ChildItem $target -File | ForEach-Object { chmod +x $_.FullName }
+          }
+          Write-Host "Installed $name $($p.version) to $target"
+        }
+        finally {
+          Remove-Item -Recurse -Force $download -ErrorAction SilentlyContinue
+        }
+      }
+    displayName: "Install local providers"
+    workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.tofuDirectory }}
