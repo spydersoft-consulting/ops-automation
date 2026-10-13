@@ -66,3 +66,22 @@ Add `*.tf` files here that use `spydersoftidentity_*` resources. Everything in
 this directory is applied to **both** environments; use `var.environment` for
 anything that differs. Import objects that already exist before managing them,
 for example `tofu import spydersoftidentity_client.example my-client-id`.
+
+## Swing Trade
+
+`swing-trade.tf` manages the `swingtrade` scope and API resource and three
+clients (`swingtrade-web`, `swingtrade-claude-connector`,
+`swingtrade-claude-code`). Their secrets are read from Vault, never written in
+this repository (`swing-trade-vault.tf` has the `vault kv put` commands):
+
+| Vault path (mount `secrets-k8`) | Fields | Used by |
+| --- | --- | --- |
+| `swing-trade/<env>/auth` | `authority`, `client_id`, `client_secret` | the `swingtrade-web` client here, and the app's ExternalSecret |
+| `swing-trade/<env>/claude-connector` | `client_secret` | the `swingtrade-claude-connector` client; paste it into Claude's connector settings |
+
+Create both entries in each environment **before** the first apply: a missing
+Vault entry fails the plan for every object in this directory. The pipeline's
+AppRole needs read access to `secrets-k8/data/swing-trade/*`. The plain secret
+values end up in the Terraform state (the provider has no write-only
+attribute), so keep the state backend private. Roles and their assignment to
+users are not managed by the provider; use the identity admin UI.
