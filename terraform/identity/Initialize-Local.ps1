@@ -21,7 +21,7 @@ param (
     [string]$ProviderRepo = "D:\spydersoft\identity\terraform-provider-spydersoft-identity",
 
     # Must match the version constraint in providers.tf.
-    [string]$ProviderVersion = "0.1.0",
+    [string]$ProviderVersion = "0.2.0",
 
     # Skip the provider build (use what is already in terraform.d).
     [switch]$SkipBuild
