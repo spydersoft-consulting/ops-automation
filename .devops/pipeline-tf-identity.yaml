@@ -40,7 +40,7 @@ extends:
       - repository: spydersoft-consulting/terraform-provider-spydersoft-identity
         namespace: spydersoft-consulting
         type: spydersoft-identity
-        version: "0.1.0"
+        version: "0.2.0"
     environments:
       - name: test
         backendKey: identity/test/terraform.tfstate

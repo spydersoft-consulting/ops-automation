@@ -5,7 +5,7 @@ terraform {
     # Bump the version here AND in .devops/pipeline-tf-identity.yaml together.
     spydersoftidentity = {
       source  = "spydersoft-consulting/spydersoft-identity"
-      version = "0.1.0"
+      version = "0.2.0"
     }
     vault = {
       source = "hashicorp/vault"
