@@ -56,3 +56,6 @@ terraform/**/tf.plan
 **/.env.*
 # Providers installed from GitHub releases by the pipeline (template-install-local-providers.yaml)
 terraform/**/terraform.d/
+
+# health sweep output
+scripts/health/out/
