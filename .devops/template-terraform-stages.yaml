@@ -169,11 +169,13 @@ stages:
   - stage: applyTofuAuto${{ parameters.stageSuffix }}
     displayName: "Apply Tofu - Auto${{ parameters.displayNameSuffix }}"
     dependsOn: planTofu${{ parameters.stageSuffix }}
+    # The plan result is checked explicitly: a plain succeeded() went False for later environments whose plan stage
+    # depended on skipped apply stages of the earlier one, so their apply was silently skipped (identity run 6983).
     # Never runs for environments that require approval: those go through the
     # manual stage below even when the plan has no destroys.
     condition: and
         (
-          succeeded(),
+          in(dependencies.planTofu${{ parameters.stageSuffix }}.result, 'Succeeded', 'SucceededWithIssues'),
           and (
             eq('${{ parameters.requireApproval }}', 'False'),
             and (
@@ -249,7 +251,7 @@ stages:
     # requireApproval is set.
     condition: and
         (
-          succeeded(),
+          in(dependencies.planTofu${{ parameters.stageSuffix }}.result, 'Succeeded', 'SucceededWithIssues'),
           and (
             or (
               eq(dependencies.planTofu${{ parameters.stageSuffix }}.outputs['planTofu.tofuPlan.HAS_DESTROY_CHANGES'], 'true'),
