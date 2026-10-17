@@ -54,7 +54,7 @@ resource "github_branch_protection" "pitstop_main" {
     pull_request_bypassers          = []
     require_code_owner_reviews      = false
     require_last_push_approval      = false
-    required_approving_review_count = 1
+    required_approving_review_count = 0
     restrict_dismissals             = false
   }
 
