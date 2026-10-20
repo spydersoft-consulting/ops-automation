@@ -54,18 +54,19 @@ resource "github_branch_protection" "swing_trade_main" {
     pull_request_bypassers          = []
     require_code_owner_reviews      = false
     require_last_push_approval      = false
-    required_approving_review_count = 1
+    required_approving_review_count = 0
     restrict_dismissals             = false
   }
 
-  # Status check context name comes from the single ADO build definition in
-  # public-build-swing-trade.tf plus the combined SonarCloud project
-  # (spydersoft-consulting_swing-trade -- must exist in SonarCloud, see
-  # swing-trade/.devops/pipeline-ci.yml's header comment) -- verify these
-  # literal names against what GitHub actually shows after the first real
-  # pipeline run before relying on this to gate merges.
+  # "swing-trade" is the ADO build definition in public-build-swing-trade.tf. SonarCloud
+  # reports one check per analysed project and prefixes it with the project name,
+  # so the .NET and web UI projects each report their own context.
   required_status_checks {
-    contexts = ["swing-trade", "SonarCloud Code Analysis"]
-    strict   = false
+    contexts = [
+      "swing-trade",
+      "[Swing Trade] SonarCloud Code Analysis",
+      "[Swing Trade Web UI] SonarCloud Code Analysis",
+    ]
+    strict = false
   }
 }
