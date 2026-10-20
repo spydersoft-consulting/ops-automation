@@ -35,6 +35,18 @@ resource "spydersoftidentity_api_resource" "swingtrade" {
   user_claims  = ["sub", "role"]
 }
 
+# Claude sends resource=<MCP URL> (RFC 8707) and Duende only accepts a resource
+# indicator that names an API resource exactly. The token then carries
+# aud=<MCP URL> instead of aud=swingtrade; the API accepts it on /mcp only.
+resource "spydersoftidentity_api_resource" "swingtrade_mcp" {
+  count = local.everywhere
+
+  name         = "https://swingtrade-mcp.${local.swingtrade_domain}/mcp"
+  display_name = "Swing Trade MCP"
+  scopes       = [spydersoftidentity_scope.swingtrade[0].name]
+  user_claims  = ["sub", "role"]
+}
+
 # --- Clients ----------------------------------------------------------------
 
 # The web BFF (OidcProxy). Confidential, authorization code. The client id and
