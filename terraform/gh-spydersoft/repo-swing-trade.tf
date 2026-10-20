@@ -48,6 +48,11 @@ resource "github_branch_protection" "swing_trade_main" {
   require_signed_commits          = false
   required_linear_history         = false
 
+  restrict_pushes {
+    blocks_creations = false
+    push_allowances  = ["/spyder007"]
+  }
+
   required_pull_request_reviews {
     dismiss_stale_reviews           = true
     dismissal_restrictions          = []

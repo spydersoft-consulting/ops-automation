@@ -105,7 +105,7 @@ resource "spydersoftidentity_client" "swingtrade_claude_code" {
   access_token_lifetime = 3600
   allowed_grant_types   = ["authorization_code"]
   allowed_scopes        = ["offline_access", spydersoftidentity_scope.swingtrade[0].name]
-  redirect_uris         = ["http://127.0.0.1", "http://localhost"]
+  redirect_uris         = ["http://127.0.0.1", "http://localhost", "https://claude.ai/api/mcp/auth_callback"]
 }
 
 # --- Client secrets, read from Vault ---------------------------------------

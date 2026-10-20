@@ -50,13 +50,18 @@ resource "github_branch_protection" "pi_monitor_main" {
   require_signed_commits          = false
   required_linear_history         = true
 
+  restrict_pushes {
+    blocks_creations = false
+    push_allowances  = ["/spyder007"]
+  }
+
   required_pull_request_reviews {
     dismiss_stale_reviews           = false
     dismissal_restrictions          = []
     pull_request_bypassers          = []
-    require_code_owner_reviews      = true
+    require_code_owner_reviews      = false
     require_last_push_approval      = false
-    required_approving_review_count = 1
+    required_approving_review_count = 0
     restrict_dismissals             = false
   }
 
