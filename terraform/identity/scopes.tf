@@ -75,3 +75,16 @@ resource "spydersoftidentity_scope" "notification_write" {
   name         = "notification:write"
   display_name = "Notification Service Write"
 }
+resource "spydersoftidentity_scope" "email_read" {
+  count = local.test_only
+
+  name         = "email:read"
+  display_name = "Email Service Read"
+}
+
+resource "spydersoftidentity_scope" "email_send" {
+  count = local.test_only
+
+  name         = "email:send"
+  display_name = "Email Service Send"
+}

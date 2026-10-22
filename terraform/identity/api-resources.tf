@@ -45,3 +45,10 @@ resource "spydersoftidentity_api_resource" "notification_api" {
   display_name = "Notification API"
   scopes       = ["notification:read", "notification:write"]
 }
+resource "spydersoftidentity_api_resource" "email_api" {
+  count = local.test_only
+
+  name         = "email-api"
+  display_name = "Email API"
+  scopes       = ["email:read", "email:send"]
+}
