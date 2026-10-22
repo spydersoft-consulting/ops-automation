@@ -37,6 +37,10 @@ extends:
     tofuDirectory: "terraform/azuread"
     addVaultAuthentication: true
     planArguments: "-var-file config/gerega.tfvars"
+    rotationResourceTypes:
+      - azuread_application_password
+      - azuread_service_principal_password
+      - time_rotating
     # This state manages the SPs that authenticate both this pipeline
     # (terraform-azuread-sp, see sp-tf-azuread.tf) and terraform-geregalab
     # (terraform-gerega-lab, which still auto-rotates). Push current values
