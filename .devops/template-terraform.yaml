@@ -46,6 +46,11 @@ parameters:
   - name: localProviders
     type: object
     default: []
+  # Resource types whose replacement (delete + create) does not require manual
+  # approval, for example secrets rotated by time_rotating.
+  - name: rotationResourceTypes
+    type: object
+    default: []
   # List of environments. Each entry may set:
   #   name:            environment name ("" for the single, unnamed default)
   #   backendKey:      state file key passed to "tofu init -backend-config"
@@ -69,6 +74,7 @@ stages:
         includeAzureDevopsVariables: ${{ parameters.includeAzureDevopsVariables }}
         syncTargets: ${{ parameters.syncTargets }}
         localProviders: ${{ parameters.localProviders }}
+        rotationResourceTypes: ${{ parameters.rotationResourceTypes }}
         requireApproval: ${{ coalesce(env.requireApproval, false) }}
         ${{ if ne(coalesce(env.name, ''), '') }}:
           stageSuffix: _${{ env.name }}
