@@ -21,12 +21,12 @@ resource "github_repository" "email" {
   web_commit_signoff_required = false
 
   security_and_analysis {
-      secret_scanning {
-          status = "disabled"
-      }
-      secret_scanning_push_protection {
-          status = "disabled"
-      }
+    secret_scanning {
+      status = "disabled"
+    }
+    secret_scanning_push_protection {
+      status = "disabled"
+    }
   }
 }
 
@@ -49,7 +49,7 @@ resource "github_branch_protection" "email_main" {
   }
 
   required_pull_request_reviews {
-    dismiss_stale_reviews           = false
+    dismiss_stale_reviews           = true
     dismissal_restrictions          = []
     pull_request_bypassers          = []
     require_code_owner_reviews      = false
@@ -59,7 +59,9 @@ resource "github_branch_protection" "email_main" {
   }
 
   required_status_checks {
-    contexts = []
-    strict   = true
+    contexts = [
+      "spydersoft-email",
+    ]
+    strict = false
   }
 }

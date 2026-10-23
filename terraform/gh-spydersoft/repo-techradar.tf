@@ -21,11 +21,53 @@ resource "github_repository" "techradar" {
   web_commit_signoff_required = false
 
   security_and_analysis {
-      secret_scanning {
-          status = "disabled"
-      }
-      secret_scanning_push_protection {
-          status = "disabled"
-      }
+    secret_scanning {
+      status = "disabled"
+    }
+    secret_scanning_push_protection {
+      status = "disabled"
+    }
+  }
+}
+
+import {
+  to = github_branch_protection.techradar_main
+  id = "techradar:main"
+}
+
+resource "github_branch_protection" "techradar_main" {
+  repository_id = github_repository.techradar.node_id
+  pattern       = "main"
+
+  allows_deletions                = false
+  allows_force_pushes             = false
+  enforce_admins                  = false
+  force_push_bypassers            = []
+  lock_branch                     = false
+  require_conversation_resolution = true
+  require_signed_commits          = false
+  required_linear_history         = false
+
+  restrict_pushes {
+    blocks_creations = false
+    push_allowances  = ["/spyder007"]
+  }
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = true
+    dismissal_restrictions          = []
+    pull_request_bypassers          = []
+    require_code_owner_reviews      = false
+    require_last_push_approval      = false
+    required_approving_review_count = 0
+    restrict_dismissals             = false
+  }
+
+  required_status_checks {
+    contexts = [
+      "techradar",
+      "SonarCloud Code Analysis",
+    ]
+    strict = false
   }
 }

@@ -49,7 +49,7 @@ resource "github_branch_protection" "oidcproxy_net_main" {
   }
 
   required_pull_request_reviews {
-    dismiss_stale_reviews           = false
+    dismiss_stale_reviews           = true
     dismissal_restrictions          = []
     pull_request_bypassers          = []
     require_code_owner_reviews      = false
@@ -59,7 +59,9 @@ resource "github_branch_protection" "oidcproxy_net_main" {
   }
 
   required_status_checks {
-    contexts = []
-    strict   = true
+    contexts = [
+      "build",
+    ]
+    strict = false
   }
 }
