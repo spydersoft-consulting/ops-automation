@@ -61,3 +61,22 @@ resource "vault_kv_secret_v2" "hcvault-app" {
     }
   )
 }
+
+# Grafana reads its Azure AD client credentials from this path via External Secrets.
+# The secret also holds unrelated keys, so merge into the existing data rather than replace it.
+data "vault_kv_secret_v2" "grafana-k8s" {
+  mount = "secrets-k8"
+  name  = "monitoring/grafana"
+}
+
+resource "vault_kv_secret_v2" "grafana-k8s" {
+  mount = "secrets-k8"
+  name  = "monitoring/grafana"
+  data_json = jsonencode(merge(
+    data.vault_kv_secret_v2.grafana-k8s.data,
+    {
+      azure_client_id     = azuread_application.grafana.client_id
+      azure_client_secret = local.grafana_primary
+    }
+  ))
+}
