@@ -63,12 +63,10 @@ moved {
 
 resource "time_rotating" "hcvault-a" {
   rotation_days = local.rotation_days
-  rfc3339       = time_static.rotation_base.rfc3339
 }
 
 resource "time_rotating" "hcvault-b" {
   rotation_days = local.rotation_days
-  rfc3339       = timeadd(time_static.rotation_base.rfc3339, local.offset)
 }
 
 resource "azuread_application_password" "hcvault-a" {
