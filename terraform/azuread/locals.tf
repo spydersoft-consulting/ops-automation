@@ -1,8 +1,5 @@
-resource "time_static" "rotation_base" {}
-
 locals {
   rotation_days = 30
-  offset        = "360h" # 15 days
 
   # For each SP/app, select the most recently rotated password as primary.
   # The password with the LATER next-rotation was rotated more recently
