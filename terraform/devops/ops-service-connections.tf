@@ -19,3 +19,8 @@ resource "azuredevops_serviceendpoint_github" "ops-spyder007-app-auth" {
   service_endpoint_name = "spyder007"
   description           = ""
 }
+
+import {
+  to = azuredevops_serviceendpoint_github.ops-spyder007-app-auth
+  id = "97a7b4ed-e5c1-4999-b697-36114643d28c/8491a4b2-e51d-4f50-b30d-d450ded4092d"
+}
