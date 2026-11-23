@@ -9,7 +9,7 @@ resource "azuredevops_build_definition" "ops-docs" {
 
   repository {
     branch_name           = "refs/heads/main"
-    service_connection_id = azuredevops_serviceendpoint_github.ops-spyder007-app-auth.id # Github App Connection
+    service_connection_id = data.azuredevops_serviceendpoint_github.ops-spyder007-app-auth.id # Github App Connection
     repo_type             = "GitHub"
     repo_id               = "spyder007/ops-docs"
     yml_path              = "azure-pipelines.yml"
