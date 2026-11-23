@@ -14,8 +14,7 @@ resource "azuredevops_serviceendpoint_github" "spydersoft-consulting" {
   description           = ""
 }
 
-resource "azuredevops_serviceendpoint_github" "ops-spyder007-app-auth" {
+data "azuredevops_serviceendpoint_github" "ops-spyder007-app-auth" {
   project_id            = azuredevops_project.ops.id
   service_endpoint_name = "spyder007"
-  description           = ""
 }
